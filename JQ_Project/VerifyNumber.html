@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Verify Number Sample</title>
+    <!--
+    改為 require 寫法
+    <script src="Scripts/jquery.js"></script>
+    <script src="Scripts/VerifyNumber.js"></script>
+    -->
+    <script src="Script/require.js"></script>
+    <style type="text/css">
+        span.component {
+            display: inline-block;
+            /* 處理元件<span>抓不到width與height問題 */
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <div>請輸入驗證碼　　<button id='btnRefresh'>換一組</button> </div>
+        <span class="component" id="VerifyNumber"
+            style="width:220px; height: 50px;border-style:solid;border-width:1px;"></span>
+        <div>
+            <input type="text" maxlength=5 id='NumberLabel' style="width:50px; height: 18px;" />&nbsp;
+            <span id="CheckResult"></span>
+        </div>
+    </div>
+</body>
+
+</html>
+<script>
+    // RequireJS 配置
+    require.config({
+        // 通過一個相對的路徑 baseUrl來載入所有程式碼。baseUrl通常被設定成data-main屬性指定指令碼的同級目錄。
+        baseUrl: "./Script",
+        // 第三方指令碼模組的別名，jquery -> lib/jquery
+        paths: {
+            "jquery": "lib/jquery",
+        }
+    });
+    require(["jquery", "VerifyNumber", "VerifyNumberEx"], function ($) {
+        $(document).ready(function () {
+            var aMaxNumber = 99999;
+            var initObj = {
+                "ComponentId": "VerifyNumber", "FontType": "Arial, sans-serif", "FontSize": 32,
+                "NumberColor": "#00aa00", "BgColor": "#ffffff", "MaxNumber": aMaxNumber,
+                "VerifyNumber": 56789
+            };
+            // 驗證碼元件初始化
+            //var aNumberChart = new Syspower.VerifyNumber(initObj);
+            var aNumberChart = new SyspowerTS.Util.VerifyNumber(initObj);
+
+            $("#btnRefresh").click(function () {
+                // 換一組驗證碼
+                var aNumber = getRandom(99999).toString();
+                if (aNumber.length < 5) {
+                    aNumber = ZERO_ARRAY[aNumber.length] + aNumber;
+                }
+                aNumberChart.resetNumber(aNumber);
+                $("#CheckResult").html("");
+                $("#NumberLabel").val("");
+                $("#NumberLabel").focus();
+            });
+            var ZERO_ARRAY = ["", "0000", "000", "00", "0"];
+
+            function getRandom(x) {
+                return Math.floor(Math.random() * x) + 1;
+            };
+            $("#NumberLabel").on("change paste", function () {
+                // 檢核驗證碼
+                $("#CheckResult").html("");
+                var aInput = $(this).val();
+                if (aInput.length < aMaxNumber.toString().length) {
+                    return;
+                }
+                else {
+                    aNumberChart.checkNumber(aInput, processResult);
+                }
+            });
+
+            function processResult(resultObj) {
+                // 處理驗證結果的callback fuction
+                console.log("resultObj.VerifyNumber=" + resultObj.VerifyNumber);
+                console.log("resultObj.UserInput=" + resultObj.UserInput);
+                console.log("resultObj.Status=" + resultObj.Status);
+                console.log("resultObj.Message=" + resultObj.Message);
+                var img = "";
+                if (resultObj.Status === 0) {
+                    img = "<img width='18' height='18' src='Images/Ok.png'></img>";
+                }
+                else {
+                    img = "<img width='18' height='18'  src='Images/Error.png'></img>";
+                }
+                $("#CheckResult").html(img);
+            }
+        });
+    });
+
+</script>

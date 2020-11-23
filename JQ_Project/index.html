@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test</title>
+    <script src="Script/require.js"></script>
+</head>
+
+<body>
+    <div id="Test"></div>
+</body>
+
+</html>
+<script>
+    // RequireJS 配置
+    require.config({
+        // 通過一個相對的路徑 baseUrl來載入所有程式碼。baseUrl通常被設定成data-main屬性指定指令碼的同級目錄。
+        baseUrl: "./Script",
+        // 第三方指令碼模組的別名,jquery -> lib/jquery
+        paths: {
+            "jquery": "lib/jquery"
+        }
+    });
+    require(["jquery", "index", "Car"], function ($,_,Syspower) {
+        $(document).ready(function () {
+            var zzz = com.syspower.test.util;
+            var initObj = {"color":"aaa"};
+            var initObj2 = {"color":"bbb"};
+            var aCar = new zzz.Car(initObj);
+            console.log(aCar.triggerBrakes());
+            console.log(aCar.getDescription());
+
+            aCar = new zzz.Foo(initObj2);
+            console.log(aCar.triggerBrakes());
+            console.log(aCar.getDescription());
+
+
+        });
+    });
+</script>

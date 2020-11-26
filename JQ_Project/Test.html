@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>TypeScript Module Test</title>
+    <script src="Script/require.js"></script>
+</head>
+<body>
+</body>
+</html>
+
+<script>
+    // RequireJS 配置
+    require.config({
+        // 通過一個相對的路徑 baseUrl來載入所有程式碼。baseUrl通常被設定成data-main屬性指定指令碼的同級目錄。
+        baseUrl: "./Script",
+        // 第三方指令碼模組的別名,jquery -> lib/jquery
+        paths: {
+            "jquery": "lib/jquery"
+        }
+    });
+    require(["jquery", "Console"], function ($,Test) {
+        $(document).ready(function () {
+            var c = new Test.ConsoleOutput();
+            c.Write(new Test.Message("ZZZZZZZZZZZZ"));           
+
+
+        });
+    });
+</script>

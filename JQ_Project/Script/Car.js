@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -27,7 +27,7 @@ var com;
                         this.brakes = '商業機密的煞車方式';
                     }
                     Car.prototype.getDescription = function () {
-                        return this.descroption + " - " + this.color;
+                        return this.descroption + "-" + this.color;
                     };
                     Car.prototype.triggerBrakes = function () {
                         if (this.brakes === '商業機密的煞車方式') {
@@ -45,9 +45,6 @@ var com;
                         var _this = _super.call(this, initObj) || this;
                         _this.brakes2 = 'FOO 商業機密的煞車方式';
                         return _this;
-                        //this.descroption = '我是車子';
-                        //this.color = color;
-                        //this.brakes = '商業機密的煞車方式';
                     }
                     Foo.prototype.triggerBrakes = function () {
                         return this.brakes2;

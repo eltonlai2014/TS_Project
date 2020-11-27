@@ -6,29 +6,31 @@
         "VerifyNumber":56789
     };
 */
-namespace SyspowerTS.Util {
-    export class VerifyNumber {
-        private ComponentId: string;
-        private FontType: string;
-        private FontSize: number;　　　　　　                       // 字型大小　　　　　　
-        private NumberColor: string;                               // 數字顏色
-        private BgColor: string;                                   // 背景顏色
-        private MaxNumber: number;        　                       // 最大號碼(亂數產生)
-        private VerifyNumber: number;                              // 頁面設定驗證碼
-        private ZeroArray = ["", "0", "00", "000"];
-        private cWidth: number;
-        private cHeight: number;
 
-        private mCanvas: HTMLCanvasElement;
-        private mBgCanvas: HTMLCanvasElement;
-        private mContext: CanvasRenderingContext2D;
-        private mBgContext: CanvasRenderingContext2D;
+namespace SyspowerTS.Util {
+    export class VerifyNumber{
+        ComponentId: string;
+        FontType: string;
+        FontSize: number;　　　　　　                        // 字型大小　　　　　　
+        NumberColor: string;                               // 數字顏色
+        BgColor: string;                                   // 背景顏色
+        MaxNumber: number;        　                       // 最大號碼(亂數產生)
+        VerifyNumber: number;                              // 頁面設定驗證碼
+        ZeroArray = ["", "0", "00", "000"];
+        cWidth: number;
+        cHeight: number;
+
+        mCanvas: HTMLCanvasElement;
+        mBgCanvas: HTMLCanvasElement;
+        mContext: CanvasRenderingContext2D;
+        mBgContext: CanvasRenderingContext2D;
         private aNumber: string; // 檢查碼               
 
         constructor(initObj: any) {
+            //super(initObj);
             this.ComponentId = this.getParamValue(initObj.ComponentId, "VerifyNumber");
             this.FontType = this.getParamValue(initObj.FontType, "Arial, sans-serif");
-            this.FontSize = this.getParamValue(initObj.FontSize, 26);　　　　　　　                  // 字型大小　　　　　　
+            this.FontSize = this.getParamValue(initObj.FontSize, 26);　　　　　　　                   // 字型大小　　　　　　
             this.NumberColor = this.getParamValue(initObj.NumberColor, "#008800");                  // 數字顏色
             this.BgColor = this.getParamValue(initObj.BgColor, "#FFFFFF");                          // 背景顏色
             this.MaxNumber = this.getParamValue(initObj.MaxNumber, 9999);         　                // 最大號碼(亂數產生)
@@ -169,3 +171,4 @@ namespace SyspowerTS.Util {
         }
     }
 }    
+

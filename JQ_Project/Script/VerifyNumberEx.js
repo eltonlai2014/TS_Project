@@ -14,6 +14,7 @@ var SyspowerTS;
         var VerifyNumber = /** @class */ (function () {
             function VerifyNumber(initObj) {
                 this.ZeroArray = ["", "0", "00", "000"];
+                //super(initObj);
                 this.ComponentId = this.getParamValue(initObj.ComponentId, "VerifyNumber");
                 this.FontType = this.getParamValue(initObj.FontType, "Arial, sans-serif");
                 this.FontSize = this.getParamValue(initObj.FontSize, 26); // 字型大小　　　　　　

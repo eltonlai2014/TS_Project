@@ -23,11 +23,12 @@
             "jquery": "lib/jquery"
         }
     });
-    require(["jquery", "index", "Car"], function ($,_,Syspower) {
+    require(["jquery", "index", "Car"], function ($,MyIndex,Syspower) {
         $(document).ready(function () {
             var zzz = com.syspower.test.util;
-            var initObj = {"color":"aaa"};
+            var initObj = {"color":"aaa","descroption":"xxxxxxxxxxxxxx"};
             var initObj2 = {"color":"bbb"};
+            /*
             var aCar = new zzz.Car(initObj);
             console.log(aCar.descroption);
             console.log(aCar.triggerBrakes());
@@ -36,7 +37,22 @@
             aCar = new zzz.Foo(initObj2);
             console.log(aCar.triggerBrakes());
             console.log(aCar.getDescription());
+            */
 
+            var xFood = new MyIndex.Foods.Hamburger(initObj);
+            console.log(xFood);
+            console.log(xFood.getDescription());
+            console.log(xFood.getPrice());
+
+            xFood = new MyIndex.Foods.FrenchFries(initObj);
+            console.log(xFood);
+            console.log(xFood.getDescription());
+            //console.log(xFood.getPrice());
+
+            xFood = new MyIndex.Foods2.FrenchFries(initObj);
+            console.log(xFood);
+            console.log(xFood.getDescription());
+            //console.log(xFood.getPrice());
 
         });
     });

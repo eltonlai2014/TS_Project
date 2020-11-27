@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
     <title>TypeScript Module Test</title>
     <script src="Script/require.js"></script>
 </head>
+
 <body>
 </body>
+
 </html>
 
 <script>
@@ -19,11 +22,15 @@
             "jquery": "lib/jquery"
         }
     });
-    require(["jquery", "Console"], function ($,Test) {
+    require(["jquery", "Console", "Dom"], function ($, Test, Test2) {
         $(document).ready(function () {
             var c = new Test.ConsoleOutput();
-            c.Write(new Test.Message("ZZZZZZZZZZZZ"));           
+            var aMsg = new Test.Message("ZZZZZZZZZZZZ");
+            c.Write(aMsg);
+            console.log("aMsg.Time=" + aMsg.Time+" "+aMsg.foo+" "+Test.Version);
 
+            var d = new Test2.DomOutput();
+            d.Write(aMsg);
 
         });
     });

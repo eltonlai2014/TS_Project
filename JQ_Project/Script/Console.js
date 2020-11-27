@@ -1,8 +1,7 @@
 define(["require", "exports", "./Common"], function (require, exports, Common_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Message = exports.ConsoleOutput = exports.Version = void 0;
-    Object.defineProperty(exports, "Message", { enumerable: true, get: function () { return Common_1.Message; } });
+    exports.Message = Common_1.Message;
     var ConsoleOutput = /** @class */ (function () {
         function ConsoleOutput() {
         }

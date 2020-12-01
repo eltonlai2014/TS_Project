@@ -35,13 +35,58 @@ define(["require", "exports", "jquery", "./Food/index", "./Food2/index"], functi
         // response is unsigned 8 bit integer
         var responseArray = new Uint8Array(rtn_data);
         console.log("responseArray.length=" + responseArray.length);
-        var deCompressBuffer = new Zlib.Gunzip(responseArray).decompress(); // 將Bytes解壓縮
+        // 這行ts不會做任何處理
+        var deCompressBuffer = new Zlib.Gunzip(responseArray).decompress(); // 將Bytes解壓縮 
         console.log("deCompressBuffer.length=" + deCompressBuffer.length);
         //var ret = getString(deCompressBuffer);
         //rtn_data = JSON.parse(ret);
         //rtn_data=ret;
-        console.log("JSON.parse ok");
         return rtn_data;
         // end of compress mode =================
     }
+    QueryInfoBlob({}, mCallbackHandlerBlob, mErrorHandlerEx);
+    function QueryInfoBlob(param, s_handle, e_handle) {
+        // 加上timestamp避免cache
+        var timestamp = new Date().getTime();
+        var aURL = "result.txt?timestamp=" + timestamp;
+        jquery_1.default.ajax(aURL, {
+            type: 'POST',
+            timeout: 15000,
+            cache: false,
+            data: param,
+            xhr: function () {
+                // JQuery3.0+ support ,Seems like the only way to get access to the xhr object
+                // Elton 20181030 -> xhr.onreadystatechange callback function is must for ie11, to prevent invaildstateerror Orz
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    try {
+                        xhr.responseType = 'arraybuffer';
+                    }
+                    catch (e) {
+                        console.log('XHR state: ' + xhr.readyState + ' ==> exception: ' + e);
+                    }
+                };
+                return xhr;
+            },
+            success: s_handle,
+            error: e_handle
+        });
+    }
+    function mCallbackHandlerBlob(data) {
+        console.log(data);
+    }
+    function mErrorHandlerEx(jqXHR, exception) {
+        console.log("mErrorHandler:<br/>" + JSON.stringify(jqXHR) + "<br/>" + exception);
+    }
 });
+/*
+declare var axios: any; // 這行ts不會做任何處理
+
+axios.get('Test.html')
+.then(function(res:any) {
+    console.log(res);
+}).catch(function(err:any) {
+    console.log(err);
+})
+
+*/ 

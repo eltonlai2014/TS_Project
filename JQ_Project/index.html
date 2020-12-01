@@ -7,6 +7,7 @@
     <title>Test</title>
     <script src="Script/require.js"></script>
     <script src="Script/gunzip.min.js"></script>
+    <!--<script src="Script/lib/axios.min.js"></script>-->
 </head>
 
 <body>
@@ -24,11 +25,11 @@
             "jquery": "lib/jquery"
         }
     });
-    require(["jquery", "index", "Car"], function ($,MyIndex,Syspower) {
+    require(["jquery", "index", "Car"], function ($, MyIndex, syspower) {
         $(document).ready(function () {
             var zzz = com.syspower.test.util;
-            var initObj = {"color":"aaa","descroption":"xxxxxxxxxxxxxx"};
-            var initObj2 = {"color":"bbb"};
+            var initObj = { "color": "aaa", "descroption": "xxxxxxxxxxxxxx" };
+            var initObj2 = { "color": "bbb" };
             /*
             var aCar = new zzz.Car(initObj);
             console.log(aCar.descroption);
@@ -57,4 +58,11 @@
 
         });
     });
+
+    require(['./Script/lib/axios.min.js'], (axios) => { // axios is given as a argument to a your callback
+        axios.get('https://httpbin.org/get').then(function (response) {
+            console.log(response); // ex.: 200
+            $("#Test").html(response.status);
+        });
+    });    
 </script>

@@ -50,13 +50,13 @@ define(["require", "exports", "jquery", "./Food/index", "./Food2/index"], functi
         var timestamp = new Date().getTime();
         var aURL = "result.txt?timestamp=" + timestamp;
         jquery_1.default.ajax(aURL, {
-            type: 'POST',
+            type: 'GET',
             timeout: 15000,
             cache: false,
             data: param,
             xhr: function () {
                 // JQuery3.0+ support ,Seems like the only way to get access to the xhr object
-                // Elton 20181030 -> xhr.onreadystatechange callback function is must for ie11, to prevent invaildstateerror Orz
+                // Elton 20181030 -> xhr.onreadystatechange callback function is must for ie11, to prevent InvalidStateError Orz
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function () {
                     try {

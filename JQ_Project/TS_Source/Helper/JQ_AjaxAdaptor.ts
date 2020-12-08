@@ -1,7 +1,10 @@
 import $ from "jquery";
 
 export class JQ_AjaxAdaptor {
-    static DEBUG: boolean = true;
+    // JQUERY AJAX 工具類別
+    static readonly DEBUG: boolean = true;
+    static readonly DEFAULT_METHOD: string = "GET";
+    static readonly DEFAULT_TIMEOUT: Number = 20000;
     descroption: string;
     initObj: any;
     constructor(initObj: any) {
@@ -13,7 +16,7 @@ export class JQ_AjaxAdaptor {
         return "[JQ_AjaxAdaptor] " + this.descroption + " " + this.initObj;
     }
 
-    public QueryInfoBlob(param: any, s_handle: any, e_handle: any): any {
+    public QueryInfoBlob(param: any, s_handle: any, e_handle: any): void {
         // 加上timestamp避免cache
         if (param.URL) {
             // 加上timestamp避免cache
@@ -22,10 +25,10 @@ export class JQ_AjaxAdaptor {
         }
         // 預設參數設定
         if (!param.type) {
-            param.type = this.initObj.type || 'GET';
+            param.type = this.initObj.type || JQ_AjaxAdaptor.DEFAULT_METHOD;
         }
         if (!param.timeout) {
-            param.timeout = this.initObj.timeout || 20000;
+            param.timeout = this.initObj.timeout || JQ_AjaxAdaptor.DEFAULT_TIMEOUT;
         }
         if (JQ_AjaxAdaptor.DEBUG) {
             console.log(param);
@@ -58,7 +61,7 @@ export class JQ_AjaxAdaptor {
         );
     }
 
-    public QueryInfo(param: any, s_handle: any, e_handle: any): any {
+    public QueryInfo(param: any, s_handle: any, e_handle: any): void {
         if (param.URL) {
             // 加上timestamp避免cache
             var timestamp = new Date().getTime();
@@ -66,10 +69,10 @@ export class JQ_AjaxAdaptor {
         }
         // 預設參數設定
         if (!param.type) {
-            param.type = this.initObj.type || 'GET';
+            param.type = this.initObj.type || JQ_AjaxAdaptor.DEFAULT_METHOD;
         }
         if (!param.timeout) {
-            param.timeout = this.initObj.timeout || 20000;
+            param.timeout = this.initObj.timeout || JQ_AjaxAdaptor.DEFAULT_TIMEOUT;
         }
         if (JQ_AjaxAdaptor.DEBUG) {
             console.log(param);

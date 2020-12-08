@@ -16,14 +16,14 @@ define(["require", "exports", "./Helper/index"], function (require, exports, AJA
             this.aJQ_AjaxAdaptor = new AJAX_Helper.JQ_AjaxAdaptor(initObj);
         }
         StockQuery.prototype.QueryInfo = function (param, s_handle, e_handle) {
-            return this.aJQ_AjaxAdaptor.QueryInfo(param, s_handle, e_handle);
+            this.aJQ_AjaxAdaptor.QueryInfo(param, s_handle, e_handle);
         };
         StockQuery.prototype.QueryInfoBlob = function (param, s_handle, e_handle) {
-            return this.aJQ_AjaxAdaptor.QueryInfoBlob(param, s_handle, e_handle);
+            this.aJQ_AjaxAdaptor.QueryInfoBlob(param, s_handle, e_handle);
         };
         StockQuery.prototype.QueryInfoBlob_Unzip = function (param, s_handle, e_handle) {
             var _this = this;
-            return this.aJQ_AjaxAdaptor.QueryInfoBlob(param, function (data) {
+            this.aJQ_AjaxAdaptor.QueryInfoBlob(param, function (data) {
                 // compress mode =================
                 // response is unsigned 8 bit integer
                 var responseArray = new Uint8Array(data);

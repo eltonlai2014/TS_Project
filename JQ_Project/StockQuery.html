@@ -26,7 +26,7 @@
     });
     require(["jquery", "StockQuery"], function ($, SyspowerLib) {
         $(document).ready(function () {
-            var initObj = {
+            let initObj = {
                 "descroption": "test",
                 "baseURL": "localhost:8080",
             };
@@ -41,14 +41,14 @@
                 console.log("mErrorHandler:" + jqXHR + " " + exception);
             }
 
-            var xGZip = true ;
-
-            var xData = {
+            // 是否需要Server端壓縮、Client端解壓縮
+            let xGZip = true ;
+            let xData = {
                 "stockId": "2330",
                 "sDate": "2020-03-01",
                 "GZip":xGZip,
             }
-            var paramObj = {
+            let paramObj = {
                 "URL": "http://localhost:8080/StockModule/StockQuery",
                 "type": "GET",
                 "timeout": 10000,

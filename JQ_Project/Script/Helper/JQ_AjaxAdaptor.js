@@ -22,10 +22,10 @@ define(["require", "exports", "jquery"], function (require, exports, jquery_1) {
             }
             // 預設參數設定
             if (!param.type) {
-                param.type = this.initObj.type || 'GET';
+                param.type = this.initObj.type || JQ_AjaxAdaptor.DEFAULT_METHOD;
             }
             if (!param.timeout) {
-                param.timeout = this.initObj.timeout || 20000;
+                param.timeout = this.initObj.timeout || JQ_AjaxAdaptor.DEFAULT_TIMEOUT;
             }
             if (JQ_AjaxAdaptor.DEBUG) {
                 console.log(param);
@@ -37,7 +37,7 @@ define(["require", "exports", "jquery"], function (require, exports, jquery_1) {
                 data: param.data,
                 xhr: function () {
                     // JQuery3.0+ support ,Seems like the only way to get access to the xhr object
-                    // Elton 20181030 -> xhr.onreadystatechange callback function is must for ie11, to prevent InvalidStateError Orz
+                    // xhr.onreadystatechange callback function is MUST for IE11, to prevent InvalidStateError
                     var xhr = new XMLHttpRequest();
                     xhr.onreadystatechange = function () {
                         try {
@@ -62,10 +62,10 @@ define(["require", "exports", "jquery"], function (require, exports, jquery_1) {
             }
             // 預設參數設定
             if (!param.type) {
-                param.type = this.initObj.type || 'GET';
+                param.type = this.initObj.type || JQ_AjaxAdaptor.DEFAULT_METHOD;
             }
             if (!param.timeout) {
-                param.timeout = this.initObj.timeout || 20000;
+                param.timeout = this.initObj.timeout || JQ_AjaxAdaptor.DEFAULT_TIMEOUT;
             }
             if (JQ_AjaxAdaptor.DEBUG) {
                 console.log(param);
@@ -79,7 +79,10 @@ define(["require", "exports", "jquery"], function (require, exports, jquery_1) {
                 error: e_handle
             });
         };
+        // JQUERY AJAX 工具類別
         JQ_AjaxAdaptor.DEBUG = true;
+        JQ_AjaxAdaptor.DEFAULT_METHOD = "GET";
+        JQ_AjaxAdaptor.DEFAULT_TIMEOUT = 20000;
         return JQ_AjaxAdaptor;
     }());
     exports.JQ_AjaxAdaptor = JQ_AjaxAdaptor;

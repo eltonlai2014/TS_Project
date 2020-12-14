@@ -7,14 +7,76 @@
     <title>Test</title>
     <script src="Script/require.js"></script>
     <script src="Script/gunzip.min.js"></script>
+    
+    <style type="text/css">
+        span.component {
+            display: inline-block;
+            /* 處理元件<span>抓不到width與height問題 */
+            position: relative;
+        }
+    </style>    
 </head>
 
 <body>
-    <div id="Test"></div>
+    <table class="controlTable" width="100%" border="1">
+        <tr>
+            <td colspan="2">
+                <div id="controlPanel">
+                    <button id="btnClear">Clear</button>&nbsp;
+                    <button id="btnReset">Reset</button>&nbsp;
+                    <button id="btnQuery">Query</button>&nbsp;
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td width="15%">投資標的</td>
+            <td><input type="text" id="xStockId" value="2330"></td>
+        </tr>
+        <tr>
+            <td>投資金額</td>
+            <td><input type="text" id="xMoney" value="50000"></td>
+        </tr>
+        <tr>
+            <td>每月扣款日</td>
+            <td>
+                <input class="chk06" type="checkbox">6&nbsp;&nbsp;&nbsp;&nbsp;
+                <input class="chk16" type="checkbox">16&nbsp;&nbsp;&nbsp;&nbsp;
+                <input class="chk26" type="checkbox">26&nbsp;&nbsp;&nbsp;&nbsp;
+            </td>
+        </tr>
+        <tr>
+            <td>投資區間</td>
+            <td><input type="text" id="xDate" value="2020-01-01"> ~ 至今</td>
+        </tr>
+    </table>
+    <br />
+    <hr />
+    <span class="component" id="VerifyNumber" style="width: 300px; height: 100px;"></span>
+    <br />
+    <hr />    
+    <table id="investTable" width="100%" border="1">
+        <tr>
+            <td>申請扣款日</td>
+            <td>實際扣款日</td>
+            <td>收盤價</td>
+            <td>股數</td>
+            <td>投資金額(成本)</td>
+        </tr>
+    </table>
 </body>
 
 </html>
 <script>
+    Number.prototype.padLeft = function (base, chr) {
+        var len = (String(base || 10).length - String(this).length) + 1;
+        return len > 0 ? new Array(len).join(chr || '0') + this : this;
+    };
+    // 數值三位加逗號 1234.56 -> 1,234.56
+    function addComma(x) {
+        var parts = x.toString().split(".");
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join(".");
+    }
     // RequireJS 配置
     require.config({
         // 通過一個相對的路徑 baseUrl來載入所有程式碼。baseUrl通常被設定成data-main屬性指定指令碼的同級目錄。
@@ -24,56 +86,185 @@
             "jquery": "lib/jquery"
         }
     });
-    require(["jquery", "StockQuery"], function ($, SyspowerLib) {
+    require(["jquery", "StockQuery", "StockChart"], function ($, SyspowerLib, SyspowerLib2) {
         $(document).ready(function () {
             let initObj = {
                 "descroption": "test",
                 "baseURL": "localhost:8080",
             };
 
-
+            var chartObj = {
+                "ComponentId": "VerifyNumber", "FontType": "Arial, sans-serif", "FontSize": 32,
+                "NumberColor": "#00aa00", "BgColor": "#ffffff", 
+                "VerifyNumber": 56789
+            };
+            var aStockChart = new SyspowerLib2.StockChart(chartObj);
+            
             function mCallbackHandler(data) {
-                console.log("mCallbackHandler");
-                console.log(data);
+                //console.log(dateList);
+                // 計算預計扣款日、實際扣款日等相關資料
+                let b06 = $(".chk06").prop('checked');
+                let b16 = $(".chk16").prop('checked');
+                let b26 = $(".chk26").prop('checked');
+                var xMoney = $("#xMoney").val();
+                var dateList = getDeductionData(data, b06, b16, b26, xMoney);
+
+                var aTickList = [];
+                for (let i = 0, n = dateList.length; i < n; i++) {
+                    let RowData = "";
+                    RowData += "<tr>";
+                    RowData += "<td>" + dateList[i].PlanDate + "</td>";
+                    RowData += "<td>" + dateList[i].MktDate + "</td>";
+                    RowData += "<td>" + dateList[i].CP + "</td>";
+                    RowData += "<td>" + addComma(dateList[i].Shares) + "</td>";
+                    RowData += "<td>" + addComma(dateList[i].Amt) + "</td>";
+                    RowData += "</tr>";
+                    aTickList.push(RowData);
+                }
+                // 資料顯示順序
+                aTickList.reverse();
+                $("#investTable tr:gt(0)").remove();
+                $('#investTable').append(aTickList.join(""));
+                aStockChart.setData(dateList);
+                aStockChart.repaint();
             }
 
             function mErrorHandlerEx(jqXHR, exception) {
                 console.log("mErrorHandler:" + jqXHR + " " + exception);
             }
 
-            // 是否需要Server端壓縮、Client端解壓縮
-            let xGZip = true ;
-            let xData = {
-                "stockId": "2330",
-                "sDate": "2020-03-01",
-                "GZip":xGZip,
+            function getDeductionData(data, b06, b16, b26, xMoney) {
+                let ret = [];
+                // 這個月份扣款日找到了沒 ?
+                let b06_find = false;
+                let b16_find = false;
+                let b26_find = false;
+                let b26_find_prevM = false; // 運氣不好的時候26~31都放假，得多找01~05
+                let lastMonth = "";
+                for (let i = 0; i < data.length; i++) {
+                    var aMktDate = data[i].MktDate.split('-');
+                    var aYear = aMktDate[0];
+                    var aMonth = aMktDate[1];
+                    var aDay = aMktDate[2];
+                    // 換月 
+                    if (lastMonth != aMonth) {
+                        // 第一個月不檢查上個月
+                        if (!b26_find && lastMonth != "") {
+                            // 上個月26沒扣到
+                            b26_find_prevM = true;
+                        }
+                        else {
+                            b26_find_prevM = false;
+                        }
+                        b06_find = false;
+                        b16_find = false;
+                        b26_find = false;
+                        lastMonth = aMonth;
+                    }
+
+                    // 找最接近6的扣款日
+                    if (!b06_find && b06) {
+                        if (aDay >= 6 && aDay < 16) {
+                            b06_find = true;
+                            data[i].PlanDate = aYear + "-" + aMonth + "-06";
+                            ret.push(data[i]);
+                        }
+                    }
+
+                    // 找最接近16的扣款日
+                    if (!b16_find && b16) {
+                        if (aDay >= 16 && aDay < 26) {
+                            b16_find = true;
+                            data[i].PlanDate = aYear + "-" + aMonth + "-16";
+                            ret.push(data[i]);
+                        }
+                    }
+
+                    // 找最接近26的扣款日
+                    if (!b26_find && b26) {
+                        if (aDay >= 26) {
+                            b26_find = true;
+                            data[i].PlanDate = aYear + "-" + aMonth + "-26";
+                            ret.push(data[i]);
+                        }
+                    }
+
+                    // 上個月沒找到，多找1~5
+                    if (b26_find_prevM && b26) {
+                        if (aDay < 6) {
+                            // 取上一個月的日期
+                            let lastMonth = new Date(parseInt(aYear), parseInt(aMonth) - 1, 1, 0, 0, 0);
+                            data[i].PlanDate = lastMonth.getFullYear() + "-" + (lastMonth.getMonth() + 1).padLeft() + "-26";
+                            ret.push(data[i]);
+                            b26_find_prevM = false;
+                        }
+                    }
+                }
+
+                // 計算可購買的股數與金額 近似值
+
+                for (let i = 0; i < ret.length; i++) {
+                    let xShares = Math.floor(xMoney / ret[i].CP);
+                    let xAmt = Math.ceil(xShares * ret[i].CP);
+
+                    ret[i].Shares = xShares;
+                    ret[i].Amt = xAmt;
+                }
+                return ret;
             }
-            let paramObj = {
-                "URL": "http://localhost:8080/StockModule/StockQuery",
-                "type": "GET",
-                "timeout": 10000,
-                "data": xData,
-            };
-            let xStockQuery = new SyspowerLib.StockQuery(initObj);
-            if(!xGZip){
-                xStockQuery.QueryInfo(paramObj, mCallbackHandler, mErrorHandlerEx);
-            }
-            else{
-                xStockQuery.QueryInfoBlob_Unzip(paramObj, mCallbackHandler, mErrorHandlerEx);
-            }
-            
-            
-            /*
-            // 查詢壓縮檔
-            var paramObj = {
-                "URL": "result.txt",
-                "type": "GET",
-                "timeout": 10000,
-                "data": xData,
-            };
-            xStockQuery.QueryInfoBlob_Unzip(paramObj, mCallbackHandler2, mErrorHandlerEx);
-            */
-            
+
+            $("#btnClear").click(function (event) {
+                event.preventDefault();
+                $("#xStockId").val("");
+                $("#xMoney").val("");
+                $("#xDate").val("");
+            });
+
+            $("#btnReset").click(function (event) {
+                event.preventDefault();
+                $("#xStockId").val("2330");
+                $("#xMoney").val("50000");
+                $("#xDate").val("2020-01-01");
+
+                console.log("06-> " + $(".chk06").prop('checked'));
+                console.log("16-> " + $(".chk16").prop('checked'));
+                console.log("26-> " + $(".chk26").prop('checked'));
+            });
+
+            $("#btnQuery").click(function (event) {
+                event.preventDefault();
+                // 檢查輸入
+                if ($("#xStockId").val() == "") {
+                    $("#xStockId").focus();
+                    return;
+                }
+
+
+                // 是否需要Server端壓縮、Client端解壓縮
+                let xGZip = true;
+                // 準備參數
+                let xData = {
+                    "stockId": $("#xStockId").val(),
+                    "sDate": $("#xDate").val(),
+                    "GZip": xGZip,
+                }
+                let paramObj = {
+                    "URL": "http://localhost:8080/StockModule/StockQuery",
+                    "type": "GET",
+                    "timeout": 10000,
+                    "data": xData,
+                };
+                // 資料查詢
+                let xStockQuery = new SyspowerLib.StockQuery(initObj);
+                if (!xGZip) {
+                    xStockQuery.QueryInfo(paramObj, mCallbackHandler, mErrorHandlerEx);
+                }
+                else {
+                    xStockQuery.QueryInfoBlob_Unzip(paramObj, mCallbackHandler, mErrorHandlerEx);
+                }
+
+            });
+
         });
     });
 

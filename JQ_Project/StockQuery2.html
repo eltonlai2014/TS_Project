@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test</title>
+    <script src="Script/lib/jquery.js"></script>
+    <script src="build/index.bundle.js"></script>
+    <script src="Script/require.js"></script>
+    <script src="Script/gunzip.min.js"></script>
+    
+    
+</head>
+
+<body>
+    <div id="Test"></div>
+</body>
+
+</html>
+<script>
+       $(document).ready(function () {
+            let initObj = {
+                "descroption": "test",
+                "baseURL": "localhost:8080",
+            };
+
+
+            function mCallbackHandler(data) {
+                console.log("mCallbackHandler");
+                console.log(data);
+            }
+
+            function mErrorHandlerEx(jqXHR, exception) {
+                console.log("mErrorHandler:" + jqXHR + " " + exception);
+            }
+
+            // 是否需要Server端壓縮、Client端解壓縮
+            let xGZip = true ;
+            let xData = {
+                "stockId": "2330",
+                "sDate": "2020-03-01",
+                "GZip":xGZip,
+            }
+            let paramObj = {
+                "URL": "http://localhost:8080/StockModule/StockQuery",
+                "type": "GET",
+                "timeout": 10000,
+                "data": xData,
+            };
+            let xStockQuery = new StockQuery(initObj);
+            if(!xGZip){
+                xStockQuery.QueryInfo(paramObj, mCallbackHandler, mErrorHandlerEx);
+            }
+            else{
+                xStockQuery.QueryInfoBlob_Unzip(paramObj, mCallbackHandler, mErrorHandlerEx);
+            }
+            
+            
+            /*
+            // 查詢壓縮檔
+            var paramObj = {
+                "URL": "result.txt",
+                "type": "GET",
+                "timeout": 10000,
+                "data": xData,
+            };
+            xStockQuery.QueryInfoBlob_Unzip(paramObj, mCallbackHandler2, mErrorHandlerEx);
+            */
+            
+        });
+</script>

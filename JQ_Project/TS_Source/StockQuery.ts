@@ -1,5 +1,5 @@
 import * as AJAX_Helper from "./Helper/index";
-export { AJAX_Helper };
+//export { AJAX_Helper };
 declare let Zlib: any; // 這行ts不會做任何處理
 
 export class StockQuery {

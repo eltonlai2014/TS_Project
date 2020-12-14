@@ -9,7 +9,6 @@ define(["require", "exports", "./Helper/index"], function (require, exports, AJA
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     AJAX_Helper = __importStar(AJAX_Helper);
-    exports.AJAX_Helper = AJAX_Helper;
     var StockQuery = /** @class */ (function () {
         function StockQuery(initObj) {
             this.initObj = initObj;

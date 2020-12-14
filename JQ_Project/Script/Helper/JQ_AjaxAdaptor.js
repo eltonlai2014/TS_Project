@@ -13,7 +13,7 @@ define(["require", "exports", "jquery"], function (require, exports, jquery_1) {
         JQ_AjaxAdaptor.prototype.getDescription = function () {
             return "[JQ_AjaxAdaptor] " + this.descroption + " " + this.initObj;
         };
-        JQ_AjaxAdaptor.prototype.QueryInfoBlob = function (param, s_handle, e_handle) {
+        JQ_AjaxAdaptor.prototype.queryInfoBlob = function (param, s_handle, e_handle) {
             // 加上timestamp避免cache
             if (param.URL) {
                 // 加上timestamp避免cache
@@ -54,7 +54,7 @@ define(["require", "exports", "jquery"], function (require, exports, jquery_1) {
                 error: e_handle
             });
         };
-        JQ_AjaxAdaptor.prototype.QueryInfo = function (param, s_handle, e_handle) {
+        JQ_AjaxAdaptor.prototype.queryInfo = function (param, s_handle, e_handle) {
             if (param.URL) {
                 // 加上timestamp避免cache
                 var timestamp = new Date().getTime();

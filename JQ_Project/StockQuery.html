@@ -7,14 +7,14 @@
     <title>Test</title>
     <script src="Script/require.js"></script>
     <script src="Script/gunzip.min.js"></script>
-    
+
     <style type="text/css">
         span.component {
             display: inline-block;
             /* 處理元件<span>抓不到width與height問題 */
             position: relative;
         }
-    </style>    
+    </style>
 </head>
 
 <body>
@@ -51,9 +51,9 @@
     </table>
     <br />
     <hr />
-    <span class="component" id="VerifyNumber" style="width: 300px; height: 100px;"></span>
+    <span class="component" id="VerifyNumber" style="width: 800px; height: 300px;"></span>
     <br />
-    <hr />    
+    <hr />
     <table id="investTable" width="100%" border="1">
         <tr>
             <td>申請扣款日</td>
@@ -95,11 +95,14 @@
 
             var chartObj = {
                 "ComponentId": "VerifyNumber", "FontType": "Arial, sans-serif", "FontSize": 32,
-                "NumberColor": "#00aa00", "BgColor": "#ffffff", 
-                "VerifyNumber": 56789
+                "NumberColor": "#00aa00", "BgColor": "#aaaaaa", "ChartBgColor": "#ffffff",
+                "VerifyNumber": 56789,
+                //"PaintOnCreate": true,
             };
+            
             var aStockChart = new SyspowerLib2.StockChart(chartObj);
             
+
             function mCallbackHandler(data) {
                 //console.log(dateList);
                 // 計算預計扣款日、實際扣款日等相關資料
@@ -125,8 +128,10 @@
                 aTickList.reverse();
                 $("#investTable tr:gt(0)").remove();
                 $('#investTable').append(aTickList.join(""));
+
                 aStockChart.setData(dateList);
                 aStockChart.repaint();
+                
             }
 
             function mErrorHandlerEx(jqXHR, exception) {
@@ -257,10 +262,10 @@
                 // 資料查詢
                 let xStockQuery = new SyspowerLib.StockQuery(initObj);
                 if (!xGZip) {
-                    xStockQuery.QueryInfo(paramObj, mCallbackHandler, mErrorHandlerEx);
+                    xStockQuery.queryInfo(paramObj, mCallbackHandler, mErrorHandlerEx);
                 }
                 else {
-                    xStockQuery.QueryInfoBlob_Unzip(paramObj, mCallbackHandler, mErrorHandlerEx);
+                    xStockQuery.queryInfoBlob_Unzip(paramObj, mCallbackHandler, mErrorHandlerEx);
                 }
 
             });

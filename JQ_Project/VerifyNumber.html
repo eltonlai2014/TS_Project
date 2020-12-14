@@ -43,17 +43,22 @@
             "jquery": "lib/jquery",
         }
     });
-    require(["jquery", "VerifyNumber", "VerifyNumberEx"], function ($) {
+    require(["jquery", "VerifyNumber", "VerifyNumberEx", "VerifyNumberEx2"], function ($,a,b,SyspowerLib) {
         $(document).ready(function () {
             var aMaxNumber = 99999;
             var initObj = {
                 "ComponentId": "VerifyNumber", "FontType": "Arial, sans-serif", "FontSize": 32,
                 "NumberColor": "#00aa00", "BgColor": "#ffffff", "MaxNumber": aMaxNumber,
-                "VerifyNumber": 56789
+                "VerifyNumber": 56789,
+                "UseClientHeight": true,
             };
             // 驗證碼元件初始化
-            var aNumberChart = new Syspower.VerifyNumber(initObj);
+            // 1. js style
+            //var aNumberChart = new Syspower.VerifyNumber(initObj);
+            // 2. ts name space
             //var aNumberChart = new SyspowerTS.Util.VerifyNumber(initObj);
+            // 3. ts class
+            var aNumberChart = new SyspowerLib.VerifyNumberEx2(initObj);
             console.log(aNumberChart);
             $("#btnRefresh").click(function () {
                 // 換一組驗證碼

@@ -16,7 +16,7 @@ export class JQ_AjaxAdaptor {
         return "[JQ_AjaxAdaptor] " + this.descroption + " " + this.initObj;
     }
 
-    public QueryInfoBlob(param: any, s_handle: any, e_handle: any): void {
+    public queryInfoBlob(param: any, s_handle: any, e_handle: any): void {
         // 加上timestamp避免cache
         if (param.URL) {
             // 加上timestamp避免cache
@@ -61,7 +61,7 @@ export class JQ_AjaxAdaptor {
         );
     }
 
-    public QueryInfo(param: any, s_handle: any, e_handle: any): void {
+    public queryInfo(param: any, s_handle: any, e_handle: any): void {
         if (param.URL) {
             // 加上timestamp避免cache
             var timestamp = new Date().getTime();

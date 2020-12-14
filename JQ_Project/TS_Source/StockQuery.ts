@@ -10,16 +10,16 @@ export class StockQuery {
         this.aJQ_AjaxAdaptor = new AJAX_Helper.JQ_AjaxAdaptor(initObj);
     }
 
-    public QueryInfo(param: any, s_handle: any, e_handle: any): void {
-        this.aJQ_AjaxAdaptor.QueryInfo(param, s_handle, e_handle);
+    public queryInfo(param: any, s_handle: any, e_handle: any): void {
+        this.aJQ_AjaxAdaptor.queryInfo(param, s_handle, e_handle);
     }
 
-    public QueryInfoBlob(param: any, s_handle: any, e_handle: any): void {
-        this.aJQ_AjaxAdaptor.QueryInfoBlob(param, s_handle, e_handle);
+    public queryInfoBlob(param: any, s_handle: any, e_handle: any): void {
+        this.aJQ_AjaxAdaptor.queryInfoBlob(param, s_handle, e_handle);
     }
 
-    public QueryInfoBlob_Unzip(param: any, s_handle: any, e_handle: any): void {
-        this.aJQ_AjaxAdaptor.QueryInfoBlob(param,
+    public queryInfoBlob_Unzip(param: any, s_handle: any, e_handle: any): void {
+        this.aJQ_AjaxAdaptor.queryInfoBlob(param,
             (data: any) => {
                 // compress mode =================
                 // response is unsigned 8 bit integer

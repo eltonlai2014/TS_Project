@@ -14,11 +14,11 @@ var __extends = (this && this.__extends) || (function () {
 define(["require", "exports", "./Helper/BaseChart"], function (require, exports, BaseChart_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    // import * as My_Helper from "./Helper/index";
-    var VerifyNumberEx2 = /** @class */ (function (_super) {
-        __extends(VerifyNumberEx2, _super);
-        function VerifyNumberEx2(initObj) {
+    var VerifyNumber = /** @class */ (function (_super) {
+        __extends(VerifyNumber, _super);
+        function VerifyNumber(initObj) {
             var _this = _super.call(this, initObj) || this;
+            _this.MaxNumber = 0; // 最大號碼(亂數產生)
             _this.ZeroArray = ["", "0", "00", "000"];
             var ComponentId = _this.getParamValue(initObj.ComponentId, "");
             _this.NumberColor = _this.getParamValue(initObj.NumberColor, "#008800"); // 數字顏色
@@ -31,7 +31,7 @@ define(["require", "exports", "./Helper/BaseChart"], function (require, exports,
             _this.drawBgToContext();
             return _this;
         }
-        VerifyNumberEx2.prototype.drawNumber = function () {
+        VerifyNumber.prototype.drawNumber = function () {
             // 畫驗證碼
             // 背景色
             var xNumber = "";
@@ -54,13 +54,10 @@ define(["require", "exports", "./Helper/BaseChart"], function (require, exports,
             this.mBgContext.fillText(xNumber, this.cWidth / 2, this.cHeight / 2);
             return xNumber;
         };
-        ;
-        VerifyNumberEx2.prototype.drawMain = function () {
-            console.log("drawMain xxxxx");
+        VerifyNumber.prototype.drawMain = function () {
             this.aNumber = this.drawNumber();
         };
-        ;
-        VerifyNumberEx2.prototype.genNumber = function (min, max) {
+        VerifyNumber.prototype.genNumber = function (min, max) {
             var tmp = Math.round(Math.random() * (max - min) + min);
             // 前面補零
             var ZERO = "";
@@ -70,11 +67,10 @@ define(["require", "exports", "./Helper/BaseChart"], function (require, exports,
             }
             return ZERO + tmp;
         };
-        ;
         /*
             重新設定驗證碼 [number]
         */
-        VerifyNumberEx2.prototype.resetNumber = function (aNumber) {
+        VerifyNumber.prototype.resetNumber = function (aNumber) {
             this.VerifyNumber = 0;
             if (aNumber) {
                 this.MaxNumber = aNumber;
@@ -82,11 +78,10 @@ define(["require", "exports", "./Helper/BaseChart"], function (require, exports,
             }
             this.repaint();
         };
-        ;
         /*
             檢查使用者輸入的檢查碼 [number] 使用者輸入 , 執行完畢呼叫callback function
         */
-        VerifyNumberEx2.prototype.checkNumber = function (number, callback) {
+        VerifyNumber.prototype.checkNumber = function (number, callback) {
             var aStatus = 0;
             var aMessage = "驗證成功";
             if (this.aNumber != number) {
@@ -112,8 +107,7 @@ define(["require", "exports", "./Helper/BaseChart"], function (require, exports,
                 }
             }, 0);
         };
-        return VerifyNumberEx2;
+        return VerifyNumber;
     }(BaseChart_1.BaseChart));
-    exports.VerifyNumberEx2 = VerifyNumberEx2;
-    ;
+    exports.VerifyNumber = VerifyNumber;
 });

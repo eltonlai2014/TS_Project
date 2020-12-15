@@ -64,7 +64,7 @@ namespace SyspowerTS.Util {
                 return def;
             }
             return aValue;
-        };
+        }
 
         private drawNumber(): string {
             // 畫驗證碼
@@ -88,13 +88,13 @@ namespace SyspowerTS.Util {
             this.mBgContext.textBaseline = 'middle';
             this.mBgContext.fillText(xNumber, this.cWidth / 2, this.cHeight / 2);
             return xNumber;
-        };
+        }
 
         private drawBgToContext(): void {
             // 將背景層貼到前幕
             this.mContext.clearRect(0, 0, this.cWidth, this.cHeight);
             this.mContext.drawImage(this.mBgCanvas, 0, 0);
-        };
+        }
 
         private genNumber(min: number, max: number): string {
             let tmp = Math.round(Math.random() * (max - min) + min);
@@ -105,7 +105,7 @@ namespace SyspowerTS.Util {
                 ZERO = this.ZeroArray[xLength];
             }
             return ZERO + tmp;
-        };
+        }
 
         /*
             重新繪製元件 [delay] setTimeout的ms. ex:delay=0 , 執行完畢呼叫callback function
@@ -128,7 +128,7 @@ namespace SyspowerTS.Util {
                     callback("repaint(" + delay + ") " + err.message);
                 }
             }
-        };
+        }
 
         /*
             重新設定驗證碼 [number] 
@@ -140,7 +140,7 @@ namespace SyspowerTS.Util {
                 this.VerifyNumber = aNumber;
             }
             this.repaint();
-        };
+        }
 
         /*
             檢查使用者輸入的檢查碼 [number] 使用者輸入 , 執行完畢呼叫callback function

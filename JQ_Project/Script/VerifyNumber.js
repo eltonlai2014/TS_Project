@@ -49,7 +49,6 @@ Syspower.VerifyNumber = (function (initObj) {
         }
         return aValue;
     }
-    ;
     function drawNumber() {
         // 畫驗證碼
         // 背景色

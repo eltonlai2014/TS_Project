@@ -24,16 +24,20 @@ export class BaseChart {
         
         // 基本設定 ====================================================================
         // 取得Component寬度+高度
-        let aComponent: HTMLElement = document.querySelector("#" + ComponentId);
+        // "strictNullChecks": true
+        // assert aComponent is not null
+        let aComponent: HTMLElement | null= document.querySelector("#" + ComponentId);
         
-        let aClientRect = aComponent.getBoundingClientRect();
+        let aClientRect = aComponent!.getBoundingClientRect();
         console.log(aClientRect);
         this.cHeight = aClientRect.height;
         this.cWidth = aClientRect.width;
         if (this.UseClientHeight) {
-            let xComponent: HTMLElement = document.getElementById(ComponentId);
-            this.cHeight = xComponent.clientHeight;
-            this.cWidth = xComponent.clientWidth;
+            let xComponent: HTMLElement | null= document.getElementById(ComponentId);
+            // "strictNullChecks": true
+            // assert aComponent is not null,need to write -> xComponent!.clientHeight 
+            this.cHeight = xComponent!.clientHeight;
+            this.cWidth = xComponent!.clientWidth;
             console.log("UseClientHeight=" + this.UseClientHeight + " " + this.cHeight + " " + this.cWidth);
         }
 
@@ -75,24 +79,24 @@ export class BaseChart {
                 callback("repaint(" + delay + ") " + err.message);
             }
         }
-    };
+    }
 
     public getParamValue(aValue: any, def: any): any {
         if (aValue === undefined || aValue === null) {
             return def;
         }
         return aValue;
-    };
+    }
 
     public drawMain(): void {
         console.log("Base drawMain");
-    };
+    }
 
     public drawBgToContext(): void {
         // 將背景層貼到前幕
         this.mContext.clearRect(0, 0, this.cWidth, this.cHeight);
         this.mContext.drawImage(this.mBgCanvas, 0, 0);
-    };
+    }
 
     //  字串池 
     //  let aText: TextObj = this.MeasureText("00000000", "normal", this.AxisFont, this.AxisFontSize);
@@ -119,17 +123,15 @@ export class BaseChart {
         div.style.fontWeight = bold;
         div.style.fontSize = size + 'pt';
         document.body.appendChild(div);
-        var aText = new TextObj();
-        aText.Width = aWidth;
-        aText.Height = Math.round(div.offsetHeight);
+        var aText = new TextObj(aWidth,Math.round(div.offsetHeight));
         document.body.removeChild(div);
         // Add the sizes to the cache as adding DOM elements is costly and can cause slow downs
         BaseChart.Text_Chche[aKey] = aText;
         return aText;
-    };
+    }
 
     // 圓角矩形
-    public roundRect(x: number, y: number, width: number, height: number, ctx: CanvasRenderingContext2D, radius?: number, fill?: boolean, stroke?: boolean): void {
+    public roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius?: number, fill?: boolean, stroke?: boolean): void {
         if (typeof stroke == "undefined") {
             stroke = true;
         }
@@ -162,10 +164,10 @@ export class BaseChart {
             ctx.fill();
         }
         ctx.restore();
-    };
+    }
 
     // 虛線
-    public dashedLineTo(fromX: number, fromY: number, toX: number, toY: number, pattern: number, lineColor: string, ctx: CanvasRenderingContext2D): void {
+    public dashedLineTo(ctx: CanvasRenderingContext2D,fromX: number, fromY: number, toX: number, toY: number, pattern: number, lineColor: string): void {
         // default interval distance -> 5px
         if (typeof pattern === "undefined") {
             pattern = 5;
@@ -195,11 +197,12 @@ export class BaseChart {
         ctx.strokeStyle = lineColor;
         ctx.stroke();
         ctx.restore();
-    };
+    }
     
     // 直線，避免antialias
-    public clearLineTo(fromX: number, fromY: number, toX: number, toY: number, lineColor: string, lineWidth?: number, ctx?: CanvasRenderingContext2D): void {
+    public clearLineTo(ctx: CanvasRenderingContext2D,fromX: number, fromY: number, toX: number, toY: number, lineColor: string, lineWidth?: number): void {     
         // default lineWidth -> 1px lineColor -> #FFFFFF
+        lineWidth = lineWidth || 1;
         lineColor = lineColor || '#FFFFFF';
         // 避免畫線時產生antialias，save()->translate()->restore()
         ctx.save();
@@ -216,10 +219,10 @@ export class BaseChart {
         ctx.strokeStyle = lineColor;
         ctx.stroke();
         ctx.restore();
-    };
+    }
 
     // 任意線段，避免antialias，用矩形模擬
-    public drawLineNoAliasing(sx: number, sy: number, tx: number, ty: number, lineColor?: string, ctx?: CanvasRenderingContext2D): void {
+    public drawLineNoAliasing(ctx: CanvasRenderingContext2D,sx: number, sy: number, tx: number, ty: number, lineColor?: string): void {      
         lineColor = lineColor || '#FFFFFF';
         let dist = Syspower.Util.DBP(sx, sy, tx, ty); // length of line
         let ang = Syspower.Util.getAngle(tx - sx, ty - sy); // angle of line
@@ -232,24 +235,24 @@ export class BaseChart {
                 1, 1); // fill in one pixel, 1x1
         }
         ctx.restore();
-    };
+    }
 
     // 畫清晰矩形 !!注意自訂方法名稱不要取為跟物件既有的名子重覆，否則效能會很差 
     // !! NEVER TRY THIS !! : CanvasRenderingContext2D.prototype.drawRect
-    public drawRectEx(x: number, y: number, width: number, height: number, color: string, lineWidth?: number, ctx?: CanvasRenderingContext2D): void {
-        this.clearLineTo(x, y, x + width, y, color, lineWidth, ctx);
-        this.clearLineTo(x + width, y, x + width, y + height, color, lineWidth, ctx);
-        this.clearLineTo(x + width, y + height, x, y + height, color, lineWidth, ctx);
-        this.clearLineTo(x, y + height, x, y, color, lineWidth, ctx);
-    };
+    public drawRectEx(ctx: CanvasRenderingContext2D,x: number, y: number, width: number, height: number, color: string, lineWidth?: number): void {
+        this.clearLineTo(ctx,x, y, x + width, y, color, lineWidth);
+        this.clearLineTo(ctx,x + width, y, x + width, y + height, color, lineWidth);
+        this.clearLineTo(ctx,x + width, y + height, x, y + height, color, lineWidth);
+        this.clearLineTo(ctx,x, y + height, x, y, color, lineWidth);
+    }
 
     // !! NEVER DO THIS !! : CanvasRenderingContext2D.prototype.fillRect
-    public fillRectEx(x: number, y: number, width: number, height: number, color: string, ctx?: CanvasRenderingContext2D): void {
+    public fillRectEx(ctx: CanvasRenderingContext2D,x: number, y: number, width: number, height: number, color: string): void {        
         ctx.beginPath();
         ctx.rect(x, y, width, height);
         ctx.fillStyle = color;
         ctx.fill();
-    };
+    }
 
     public drawString (ctx:CanvasRenderingContext2D, txt:string, x:number, y:number, size:number, font?:string, color?:string, align?:any, base?:any):number {
         color = color || "#000000";
@@ -277,12 +280,15 @@ export class BaseChart {
             ctx.fillText(txt, x, y);
         }
         return ctx.measureText(txt).width;
-    };
+    }
 
-};
+}
 
 export class TextObj {
     public Width: number;
     public Height: number;
-};
-
+    constructor(Width: number,Height: number) {
+        this.Width = Width;
+        this.Height = Height;
+    }    
+}

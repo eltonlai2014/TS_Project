@@ -52,13 +52,17 @@
                 "VerifyNumber": 56789,
                 "UseClientHeight": true,
             };
+            
             // 驗證碼元件初始化
             // 1. js style
             //var aNumberChart = new Syspower.VerifyNumber(initObj);
+
             // 2. ts name space
             //var aNumberChart = new SyspowerTS.Util.VerifyNumber(initObj);
+
             // 3. ts class
-            var aNumberChart = new SyspowerLib.VerifyNumberEx2(initObj);
+            var aNumberChart = new SyspowerLib.VerifyNumber(initObj);
+
             console.log(aNumberChart);
             $("#btnRefresh").click(function () {
                 // 換一組驗證碼

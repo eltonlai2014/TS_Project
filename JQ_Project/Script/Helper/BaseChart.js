@@ -12,6 +12,8 @@ define(["require", "exports"], function (require, exports) {
             this.UseClientHeight = this.getParamValue(initObj.UseClientHeight, false);
             // 基本設定 ====================================================================
             // 取得Component寬度+高度
+            // "strictNullChecks": true
+            // assert aComponent is not null
             var aComponent = document.querySelector("#" + ComponentId);
             var aClientRect = aComponent.getBoundingClientRect();
             console.log(aClientRect);
@@ -19,6 +21,8 @@ define(["require", "exports"], function (require, exports) {
             this.cWidth = aClientRect.width;
             if (this.UseClientHeight) {
                 var xComponent = document.getElementById(ComponentId);
+                // "strictNullChecks": true
+                // assert aComponent is not null,need to write -> xComponent!.clientHeight 
                 this.cHeight = xComponent.clientHeight;
                 this.cWidth = xComponent.clientWidth;
                 console.log("UseClientHeight=" + this.UseClientHeight + " " + this.cHeight + " " + this.cWidth);
@@ -60,24 +64,20 @@ define(["require", "exports"], function (require, exports) {
                 }
             }
         };
-        ;
         BaseChart.prototype.getParamValue = function (aValue, def) {
             if (aValue === undefined || aValue === null) {
                 return def;
             }
             return aValue;
         };
-        ;
         BaseChart.prototype.drawMain = function () {
             console.log("Base drawMain");
         };
-        ;
         BaseChart.prototype.drawBgToContext = function () {
             // 將背景層貼到前幕
             this.mContext.clearRect(0, 0, this.cWidth, this.cHeight);
             this.mContext.drawImage(this.mBgCanvas, 0, 0);
         };
-        ;
         //  字串池 
         //  let aText: TextObj = this.MeasureText("00000000", "normal", this.AxisFont, this.AxisFontSize);
         //  
@@ -102,17 +102,14 @@ define(["require", "exports"], function (require, exports) {
             div.style.fontWeight = bold;
             div.style.fontSize = size + 'pt';
             document.body.appendChild(div);
-            var aText = new TextObj();
-            aText.Width = aWidth;
-            aText.Height = Math.round(div.offsetHeight);
+            var aText = new TextObj(aWidth, Math.round(div.offsetHeight));
             document.body.removeChild(div);
             // Add the sizes to the cache as adding DOM elements is costly and can cause slow downs
             BaseChart.Text_Chche[aKey] = aText;
             return aText;
         };
-        ;
         // 圓角矩形
-        BaseChart.prototype.roundRect = function (x, y, width, height, ctx, radius, fill, stroke) {
+        BaseChart.prototype.roundRect = function (ctx, x, y, width, height, radius, fill, stroke) {
             if (typeof stroke == "undefined") {
                 stroke = true;
             }
@@ -146,9 +143,8 @@ define(["require", "exports"], function (require, exports) {
             }
             ctx.restore();
         };
-        ;
         // 虛線
-        BaseChart.prototype.dashedLineTo = function (fromX, fromY, toX, toY, pattern, lineColor, ctx) {
+        BaseChart.prototype.dashedLineTo = function (ctx, fromX, fromY, toX, toY, pattern, lineColor) {
             // default interval distance -> 5px
             if (typeof pattern === "undefined") {
                 pattern = 5;
@@ -179,10 +175,10 @@ define(["require", "exports"], function (require, exports) {
             ctx.stroke();
             ctx.restore();
         };
-        ;
         // 直線，避免antialias
-        BaseChart.prototype.clearLineTo = function (fromX, fromY, toX, toY, lineColor, lineWidth, ctx) {
+        BaseChart.prototype.clearLineTo = function (ctx, fromX, fromY, toX, toY, lineColor, lineWidth) {
             // default lineWidth -> 1px lineColor -> #FFFFFF
+            lineWidth = lineWidth || 1;
             lineColor = lineColor || '#FFFFFF';
             // 避免畫線時產生antialias，save()->translate()->restore()
             ctx.save();
@@ -200,9 +196,8 @@ define(["require", "exports"], function (require, exports) {
             ctx.stroke();
             ctx.restore();
         };
-        ;
         // 任意線段，避免antialias，用矩形模擬
-        BaseChart.prototype.drawLineNoAliasing = function (sx, sy, tx, ty, lineColor, ctx) {
+        BaseChart.prototype.drawLineNoAliasing = function (ctx, sx, sy, tx, ty, lineColor) {
             lineColor = lineColor || '#FFFFFF';
             var dist = Syspower.Util.DBP(sx, sy, tx, ty); // length of line
             var ang = Syspower.Util.getAngle(tx - sx, ty - sy); // angle of line
@@ -216,24 +211,21 @@ define(["require", "exports"], function (require, exports) {
             }
             ctx.restore();
         };
-        ;
         // 畫清晰矩形 !!注意自訂方法名稱不要取為跟物件既有的名子重覆，否則效能會很差 
         // !! NEVER TRY THIS !! : CanvasRenderingContext2D.prototype.drawRect
-        BaseChart.prototype.drawRectEx = function (x, y, width, height, color, lineWidth, ctx) {
-            this.clearLineTo(x, y, x + width, y, color, lineWidth, ctx);
-            this.clearLineTo(x + width, y, x + width, y + height, color, lineWidth, ctx);
-            this.clearLineTo(x + width, y + height, x, y + height, color, lineWidth, ctx);
-            this.clearLineTo(x, y + height, x, y, color, lineWidth, ctx);
+        BaseChart.prototype.drawRectEx = function (ctx, x, y, width, height, color, lineWidth) {
+            this.clearLineTo(ctx, x, y, x + width, y, color, lineWidth);
+            this.clearLineTo(ctx, x + width, y, x + width, y + height, color, lineWidth);
+            this.clearLineTo(ctx, x + width, y + height, x, y + height, color, lineWidth);
+            this.clearLineTo(ctx, x, y + height, x, y, color, lineWidth);
         };
-        ;
         // !! NEVER DO THIS !! : CanvasRenderingContext2D.prototype.fillRect
-        BaseChart.prototype.fillRectEx = function (x, y, width, height, color, ctx) {
+        BaseChart.prototype.fillRectEx = function (ctx, x, y, width, height, color) {
             ctx.beginPath();
             ctx.rect(x, y, width, height);
             ctx.fillStyle = color;
             ctx.fill();
         };
-        ;
         BaseChart.prototype.drawString = function (ctx, txt, x, y, size, font, color, align, base) {
             color = color || "#000000";
             base = base || "bottom";
@@ -261,17 +253,16 @@ define(["require", "exports"], function (require, exports) {
             }
             return ctx.measureText(txt).width;
         };
-        ;
         BaseChart.Text_Chche = {}; // 字串池
         return BaseChart;
     }());
     exports.BaseChart = BaseChart;
-    ;
     var TextObj = /** @class */ (function () {
-        function TextObj() {
+        function TextObj(Width, Height) {
+            this.Width = Width;
+            this.Height = Height;
         }
         return TextObj;
     }());
     exports.TextObj = TextObj;
-    ;
 });

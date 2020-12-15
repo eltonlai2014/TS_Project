@@ -1,9 +1,9 @@
 import { BaseChart } from "./Helper/BaseChart";
 
-export class VerifyNumberEx2 extends BaseChart {
+export class VerifyNumber extends BaseChart {
     NumberColor: any;
     VerifyNumber: number;                              // 頁面設定驗證碼
-    MaxNumber: number;        　                       // 最大號碼(亂數產生)
+    MaxNumber: number = 0;        　                   // 最大號碼(亂數產生)
     ZeroArray = ["", "0", "00", "000"];
     private aNumber: string; // 檢查碼  
     constructor(initObj: any) {
@@ -12,8 +12,8 @@ export class VerifyNumberEx2 extends BaseChart {
         this.NumberColor = this.getParamValue(initObj.NumberColor, "#008800");                  // 數字顏色
         this.VerifyNumber = this.getParamValue(initObj.VerifyNumber, 0);                        // 頁面設定驗證碼
         // 頁面加入<Canvas>標籤
-        var aComponent: HTMLElement = document.querySelector("#" + ComponentId);
-        aComponent.appendChild(this.mCanvas);
+        var aComponent: HTMLElement | null = document.querySelector("#" + ComponentId);
+        aComponent!.appendChild(this.mCanvas);
 
         // 繪製畫面
         this.aNumber = this.drawNumber();
@@ -43,11 +43,11 @@ export class VerifyNumberEx2 extends BaseChart {
         this.mBgContext.textBaseline = 'middle';
         this.mBgContext.fillText(xNumber, this.cWidth / 2, this.cHeight / 2);
         return xNumber;
-    };
+    }
 
     public drawMain(): void {
         this.aNumber = this.drawNumber();
-    };
+    }
     private genNumber(min: number, max: number): string {
         let tmp = Math.round(Math.random() * (max - min) + min);
         // 前面補零
@@ -57,7 +57,7 @@ export class VerifyNumberEx2 extends BaseChart {
             ZERO = this.ZeroArray[xLength];
         }
         return ZERO + tmp;
-    };
+    }
 
     /*
         重新設定驗證碼 [number] 
@@ -69,7 +69,7 @@ export class VerifyNumberEx2 extends BaseChart {
             this.VerifyNumber = aNumber;
         }
         this.repaint();
-    };
+    }
 
     /*
         檢查使用者輸入的檢查碼 [number] 使用者輸入 , 執行完畢呼叫callback function
@@ -99,4 +99,4 @@ export class VerifyNumberEx2 extends BaseChart {
         }, 0);
     }
 
-};
+}

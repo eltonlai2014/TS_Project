@@ -7,6 +7,7 @@
     <title>Test</title>
     <script src="Script/require.js"></script>
     <script src="Script/gunzip.min.js"></script>
+    <script src="Script/HashMap.js"></script>
 
     <style type="text/css">
         span.component {
@@ -99,28 +100,28 @@
                 "VerifyNumber": 56789,
                 //"PaintOnCreate": true,
             };
-            
+
             var aStockChart = new SyspowerLib2.StockChart(chartObj);
-            
+
 
             function mCallbackHandler(data) {
-                //console.log(dateList);
+                //console.log(data);
                 // 計算預計扣款日、實際扣款日等相關資料
                 let b06 = $(".chk06").prop('checked');
                 let b16 = $(".chk16").prop('checked');
                 let b26 = $(".chk26").prop('checked');
                 var xMoney = $("#xMoney").val();
-                var dateList = getDeductionData(data, b06, b16, b26, xMoney);
+                var invList = getDeductionData(data, b06, b16, b26, xMoney);
 
                 var aTickList = [];
-                for (let i = 0, n = dateList.length; i < n; i++) {
+                for (let i = 0, n = invList.length; i < n; i++) {
                     let RowData = "";
                     RowData += "<tr>";
-                    RowData += "<td>" + dateList[i].PlanDate + "</td>";
-                    RowData += "<td>" + dateList[i].MktDate + "</td>";
-                    RowData += "<td>" + dateList[i].CP + "</td>";
-                    RowData += "<td>" + addComma(dateList[i].Shares) + "</td>";
-                    RowData += "<td>" + addComma(dateList[i].Amt) + "</td>";
+                    RowData += "<td>" + invList[i].PlanDate + "</td>";
+                    RowData += "<td>" + invList[i].MktDate + "</td>";
+                    RowData += "<td>" + invList[i].CP + "</td>";
+                    RowData += "<td>" + addComma(invList[i].Shares) + "</td>";
+                    RowData += "<td>" + addComma(invList[i].Amt) + "</td>";
                     RowData += "</tr>";
                     aTickList.push(RowData);
                 }
@@ -129,9 +130,9 @@
                 $("#investTable tr:gt(0)").remove();
                 $('#investTable').append(aTickList.join(""));
 
-                aStockChart.setData(dateList);
+                aStockChart.setData(data,invList);
                 aStockChart.repaint();
-                
+
             }
 
             function mErrorHandlerEx(jqXHR, exception) {
@@ -207,11 +208,9 @@
                 }
 
                 // 計算可購買的股數與金額 近似值
-
                 for (let i = 0; i < ret.length; i++) {
                     let xShares = Math.floor(xMoney / ret[i].CP);
                     let xAmt = Math.ceil(xShares * ret[i].CP);
-
                     ret[i].Shares = xShares;
                     ret[i].Amt = xAmt;
                 }

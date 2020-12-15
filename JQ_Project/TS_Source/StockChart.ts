@@ -1,6 +1,6 @@
-import { BaseChart } from "./Helper/BaseChart";
-import { TextObj } from "./Helper/BaseChart";
-// import * as My_Helper from "./Helper/index";
+//import { BaseChart, TextObj } from "./Helper/BaseChart";
+//import { HashMap } from "./Helper/HashMap";
+import { BaseChart, TextObj,HashMap } from "./Helper/index";
 
 export class StockChart extends BaseChart {
     NumberColor: any;
@@ -30,8 +30,8 @@ export class StockChart extends BaseChart {
         this.RectAmounts = this.getParamValue(initObj.RectAmounts,80);                                            // 畫面資料筆數
 
         // 頁面加入<Canvas>標籤
-        var aComponent: HTMLElement = document.querySelector("#" + ComponentId);
-        aComponent.appendChild(this.mCanvas);
+        var aComponent: HTMLElement | null = document.querySelector("#" + ComponentId);
+        aComponent!.appendChild(this.mCanvas);
         let aText: TextObj = this.MeasureText("00000000", "normal", this.AxisFont, this.AxisFontSize);
         this.AxisWidth = aText.Width;
         this.AxisHeight = aText.Height;
@@ -45,28 +45,68 @@ export class StockChart extends BaseChart {
         }
     }
 
-    public setData(data: any): void {
+    public setData(data: any,invList:any): void {
         this.ChartData = data;
-        for (let i = 0; i < data.length; i++) {
-            console.log(data[i]);
+
+        if (invList.length > 0) {
+            // 開始結束日期
+            let startDate = invList[0].MktDate;
+            let endDate = data[data.length - 1].MktDate;
+            // 計算市值
+            for (let i = 0; i < data.length; i++) {
+                if (data[i].MktDate == startDate) {
+                    data = data.slice(i);
+                    break;
+                }
+            }
+            console.log(startDate + " " + endDate + " " + data.length);
+
+            let invMap = new HashMap();
+            for (let i = 0, n = invList.length; i < n; i++) {
+                invMap.put(invList[i].MktDate, invList[i]);
+            }
+            console.log(invMap);
+
+            let SumShares = 0;
+            for (let i = 0; i < data.length; i++) {
+                let aObj = invMap.get(data[i].MktDate);
+                if (aObj) {
+                    // 累計購買金額與股數
+                    SumShares += aObj.Shares;
+                    data[i].SumShares = SumShares;
+                    data[i].SumAmt = aObj.Amt;
+                    if (i > 0) {
+                        data[i].SumAmt += data[i - 1].SumAmt;
+                    }
+                }
+                else {
+                    // 用前一日的資料
+                    data[i].SumShares = data[i - 1].SumShares;
+                    data[i].SumAmt = data[i - 1].SumAmt;
+                }
+                // 實際市值 = 累計股數 * 收盤價
+                data[i].RealAmt = data[i].SumShares * data[i].CP;
+                console.log(data[i]);
+            }
         }
+
     }
 
     public drawChart(): void {
         // 繪圖
         // BgColor
-        this.fillRectEx(0, 0, this.cWidth, this.cHeight, this.BgColor, this.mBgContext);
+        this.fillRectEx(this.mBgContext,0, 0, this.cWidth, this.cHeight, this.BgColor);
         // ChartBg
-        this.fillRectEx(this.AxisWidth, this.BorderHeight, this.ChartWidth, this.ChartHeight, this.ChartBgColor, this.mBgContext);
+        this.fillRectEx(this.mBgContext,this.AxisWidth, this.BorderHeight, this.ChartWidth, this.ChartHeight, this.ChartBgColor);
         // Border
-        this.drawRectEx(this.AxisWidth, this.BorderHeight, this.ChartWidth, this.ChartHeight, "0000FF", 1, this.mBgContext);
+        this.drawRectEx(this.mBgContext,this.AxisWidth, this.BorderHeight, this.ChartWidth, this.ChartHeight, "0000FF", 1);
 
         // 水平座標軸與水平線
         let AxisCount = 5;
         for (let i = 0; i < AxisCount; i++) {
             // public dashedLineTo(fromX: number, fromY: number, toX: number, toY: number, pattern: number, lineColor: string, ctx: CanvasRenderingContext2D): void {
             let yPOS = (this.ChartHeight / (AxisCount + 1)) * (i + 1) + this.BorderHeight;
-            this.dashedLineTo(this.AxisWidth, yPOS, this.ChartWidth + this.AxisWidth, yPOS, 3, "#000000", this.mBgContext);
+            this.dashedLineTo(this.mBgContext,this.AxisWidth, yPOS, this.ChartWidth + this.AxisWidth, yPOS, 3, "#000000");
             this.drawString(this.mBgContext, "1234", this.AxisWidth - 4, Math.round(yPOS + this.AxisHeight / 2), this.AxisFontSize, this.AxisFont, "#000000", "right");
 
             // drawString (ctx:CanvasRenderingContext2D, txt:string, x:number, y:number, size:number, font?:string, color?:string, align?:any, base?:any):number
@@ -105,6 +145,6 @@ export class StockChart extends BaseChart {
         //this.aJQ_AjaxAdaptor.QueryInfo(param, s_handle, e_handle);
     }
 
-};
+}
 
 

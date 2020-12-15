@@ -50,7 +50,7 @@ Syspower.VerifyNumber = (function (initObj: any) {
             return def;
         }
         return aValue;
-    };
+    }
 
     function drawNumber() {
         // 畫驗證碼
@@ -149,5 +149,5 @@ Syspower.VerifyNumber = (function (initObj: any) {
     };
     return public_method;
     // return public_method 必須放在物件結尾
-});
+})
 

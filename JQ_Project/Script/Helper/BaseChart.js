@@ -1,10 +1,22 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    // 繪圖基礎類別，包含一些共用方法
     var BaseChart = /** @class */ (function () {
         function BaseChart(initObj) {
+            var _this_1 = this;
+            this.mouseMove = function (evt) {
+            };
+            this.getMousePos = function (evt) {
+                var rect = _this_1.ClientRect;
+                var foo = {
+                    x: Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * _this_1.cWidth),
+                    y: Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * _this_1.cHeight)
+                };
+                return foo;
+            };
             this.initObj = initObj;
-            var ComponentId = this.getParamValue(initObj.ComponentId, "VerifyNumber");
+            var ComponentId = this.getParamValue(initObj.ComponentId, "BaseChart");
             this.FontType = this.getParamValue(initObj.FontType, "Arial, sans-serif");
             this.FontSize = this.getParamValue(initObj.FontSize, 26); // 字型大小　　　　　　
             this.BgColor = this.getParamValue(initObj.BgColor, "#FFFFFF"); // 背景顏色
@@ -16,7 +28,7 @@ define(["require", "exports"], function (require, exports) {
             // assert aComponent is not null
             var aComponent = document.querySelector("#" + ComponentId);
             var aClientRect = aComponent.getBoundingClientRect();
-            console.log(aClientRect);
+            this.ClientRect = aClientRect;
             this.cHeight = aClientRect.height;
             this.cWidth = aClientRect.width;
             if (this.UseClientHeight) {
@@ -25,7 +37,7 @@ define(["require", "exports"], function (require, exports) {
                 // assert aComponent is not null,need to write -> xComponent!.clientHeight 
                 this.cHeight = xComponent.clientHeight;
                 this.cWidth = xComponent.clientWidth;
-                console.log("UseClientHeight=" + this.UseClientHeight + " " + this.cHeight + " " + this.cWidth);
+                //console.log("UseClientHeight=" + this.UseClientHeight + " " + this.cHeight + " " + this.cWidth);
             }
             //aClientRect.clientHeight;
             // 產生mCanvas與mBgCanvas
@@ -38,8 +50,8 @@ define(["require", "exports"], function (require, exports) {
             this.mBgCanvas.height = this.cHeight;
             this.mBgContext = this.mBgCanvas.getContext('2d');
             // 避免antialias(應該沒效)
-            this.mContext.imageSmoothingEnabled = false;
-            this.mBgContext.imageSmoothingEnabled = false;
+            // this.mContext.imageSmoothingEnabled = false;
+            // this.mBgContext.imageSmoothingEnabled = false;
             // 基本設定 End =================================================================        
         }
         /*
@@ -69,9 +81,6 @@ define(["require", "exports"], function (require, exports) {
                 return def;
             }
             return aValue;
-        };
-        BaseChart.prototype.drawMain = function () {
-            console.log("Base drawMain");
         };
         BaseChart.prototype.drawBgToContext = function () {
             // 將背景層貼到前幕
@@ -227,6 +236,8 @@ define(["require", "exports"], function (require, exports) {
             ctx.fill();
         };
         BaseChart.prototype.drawString = function (ctx, txt, x, y, size, font, color, align, base) {
+            // 畫字串
+            ctx.save();
             color = color || "#000000";
             base = base || "bottom";
             align = align || "left";
@@ -238,22 +249,105 @@ define(["require", "exports"], function (require, exports) {
             if (size <= 8) {
                 //因為chrome字型指定9px就不能更小，故用ctx.scale縮放處理 (x,y,size 先放大兩倍，再scale 0.5) 
                 //放大前先紀錄
-                ctx.save();
                 size *= 2;
                 x *= 2;
                 y *= 2;
                 ctx.font = size + "pt " + font;
                 ctx.scale(0.5, 0.5);
                 ctx.fillText(txt, x, y);
-                //回復
-                ctx.restore();
             }
             else {
                 ctx.fillText(txt, x, y);
             }
+            //回復
+            ctx.restore();
             return ctx.measureText(txt).width;
         };
+        BaseChart.prototype.drawCircle = function (ctx, x, y, radius, color) {
+            // 畫圓型
+            ctx.save();
+            color = color || "#000000";
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.restore();
+        };
+        BaseChart.prototype.getPrettyAxis = function (dMin, dMax, aDiv) {
+            if (aDiv == undefined) { // 幾等分，預設5等分
+                aDiv = 5;
+            }
+            var ret = []; // 回傳陣列
+            // 最大最小值乘數 dMax-(dMax+dMin)/2 = dMax/2-dMin/2
+            var factor = 0.05;
+            var aRange = Math.abs(dMax - dMin) * factor;
+            //console.log("aRange="+aRange+" dMax*factor="+(dMax*factor));
+            if (dMin < 0) {
+                dMin = dMin - aRange;
+            }
+            else if (dMin > 0) {
+                dMin = Math.max(dMin - aRange, 0);
+            }
+            if (dMax > 0) {
+                dMax = dMax + aRange;
+            }
+            else if (dMax < 0) {
+                dMax = Math.min(dMax + aRange, 0);
+            }
+            var diff = (dMax - dMin) / aDiv;
+            //console.log("dMin="+dMin+" dMax="+dMax+" diff="+diff);
+            // 計算等分數值
+            var segment = -1;
+            var startValue = 0;
+            for (var i = 0; i < BaseChart.Axis_Default.length; i++) {
+                if (diff <= BaseChart.Axis_Default[i]) {
+                    startValue = Math.floor(dMin / BaseChart.Axis_Default[i]);
+                    //console.log("startValue="+startValue+" Axis_5["+i+"]="+this.Axis_5[i]);
+                    if ((startValue * BaseChart.Axis_Default[i] + BaseChart.Axis_Default[i] * (aDiv - 1)) >= dMax) {
+                        segment = BaseChart.Axis_Default[i];
+                        break;
+                    }
+                }
+            }
+            // 如果Array找不到最適值，例外處理
+            if (segment == -1) {
+                // 用最大值取Log，四捨五入乘上10來當單位
+                var foo = Math.round(Math.max(Math.abs(dMin), Math.abs(dMax))).toString();
+                //console.log("foo="+((foo.length)));  
+                var foo2 = Math.pow(10, (foo.length - 1));
+                //console.log("Math.pow="+foo2);  
+                var Axis_foo = [foo2, foo2 * 1.2, foo2 * 1.5, foo2 * 2, foo2 * 2.5, foo2 * 3, foo2 * 4, foo2 * 5, foo2 * 6, foo2 * 7, foo2 * 8, foo2 * 9];
+                startValue = 0;
+                for (var i = 0; i < Axis_foo.length; i++) {
+                    if (diff <= Axis_foo[i]) {
+                        startValue = Math.floor(dMin / Axis_foo[i]);
+                        //console.log("startValue="+startValue+" Axis_foo["+i+"]="+Axis_foo[i]);
+                        if ((startValue * Axis_foo[i] + Axis_foo[i] * (aDiv - 1)) > dMax) {
+                            segment = Axis_foo[i];
+                            break;
+                        }
+                    }
+                }
+                //console.log("segment="+segment);  	
+            }
+            for (var i = startValue; i < startValue + aDiv; i++) {
+                ret.push(i * segment);
+            }
+            return ret;
+        };
+        BaseChart.prototype.log10 = function (val) {
+            return Math.log(val) / Math.LN10;
+        };
         BaseChart.Text_Chche = {}; // 字串池
+        BaseChart.Axis_Default = [
+            0.1, 0.2, 0.25, 0.5, 0.8,
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+            12, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100,
+            150, 200, 250, 300, 350, 400, 450, 500, 800, 1000,
+            1200, 1250, 1500, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000,
+            12000, 15000, 20000, 25000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000,
+            120000, 150000, 200000, 250000, 500000, 1000000
+        ];
         return BaseChart;
     }());
     exports.BaseChart = BaseChart;

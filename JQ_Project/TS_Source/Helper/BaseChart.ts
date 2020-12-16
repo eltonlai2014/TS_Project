@@ -1,5 +1,5 @@
-
-export class BaseChart {
+// 繪圖基礎類別，包含一些共用方法
+export abstract class BaseChart {
     initObj: any;
     mCanvas: HTMLCanvasElement;
     mBgCanvas: HTMLCanvasElement;
@@ -12,33 +12,44 @@ export class BaseChart {
     FontType: string;
     FontSize: number;
     UseClientHeight: boolean;
+    ClientRect:any;
     static Text_Chche: any = {};                                                                // 字串池
+    static Axis_Default: number[] = [
+        0.1, 0.2, 0.25, 0.5, 0.8,
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+        12, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100,
+        150, 200, 250, 300, 350, 400, 450, 500, 800, 1000,
+        1200, 1250, 1500, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000,
+        12000, 15000, 20000, 25000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000,
+        120000, 150000, 200000, 250000, 500000, 1000000
+    ];
+
     constructor(initObj: any) {
         this.initObj = initObj;
-        let ComponentId = this.getParamValue(initObj.ComponentId, "VerifyNumber");
+        let ComponentId = this.getParamValue(initObj.ComponentId, "BaseChart");
         this.FontType = this.getParamValue(initObj.FontType, "Arial, sans-serif");
         this.FontSize = this.getParamValue(initObj.FontSize, 26);　　　　　　　                   // 字型大小　　　　　　
         this.BgColor = this.getParamValue(initObj.BgColor, "#FFFFFF");                          // 背景顏色
         this.ChartBgColor = this.getParamValue(initObj.ChartBgColor, "#FFFFFF");                // 圖型背景顏色
-        this.UseClientHeight = this.getParamValue(initObj.UseClientHeight, false); 
-        
+        this.UseClientHeight = this.getParamValue(initObj.UseClientHeight, false);
+
         // 基本設定 ====================================================================
         // 取得Component寬度+高度
         // "strictNullChecks": true
         // assert aComponent is not null
-        let aComponent: HTMLElement | null= document.querySelector("#" + ComponentId);
-        
+        let aComponent: HTMLElement | null = document.querySelector("#" + ComponentId);
+
         let aClientRect = aComponent!.getBoundingClientRect();
-        console.log(aClientRect);
+        this.ClientRect = aClientRect;
         this.cHeight = aClientRect.height;
         this.cWidth = aClientRect.width;
         if (this.UseClientHeight) {
-            let xComponent: HTMLElement | null= document.getElementById(ComponentId);
+            let xComponent: HTMLElement | null = document.getElementById(ComponentId);
             // "strictNullChecks": true
             // assert aComponent is not null,need to write -> xComponent!.clientHeight 
             this.cHeight = xComponent!.clientHeight;
             this.cWidth = xComponent!.clientWidth;
-            console.log("UseClientHeight=" + this.UseClientHeight + " " + this.cHeight + " " + this.cWidth);
+            //console.log("UseClientHeight=" + this.UseClientHeight + " " + this.cHeight + " " + this.cWidth);
         }
 
         //aClientRect.clientHeight;
@@ -53,8 +64,9 @@ export class BaseChart {
         this.mBgContext = this.mBgCanvas.getContext('2d') as CanvasRenderingContext2D;
 
         // 避免antialias(應該沒效)
-        this.mContext.imageSmoothingEnabled = false;
-        this.mBgContext.imageSmoothingEnabled = false;
+        // this.mContext.imageSmoothingEnabled = false;
+        // this.mBgContext.imageSmoothingEnabled = false;
+
         // 基本設定 End =================================================================        
     }
 
@@ -88,9 +100,8 @@ export class BaseChart {
         return aValue;
     }
 
-    public drawMain(): void {
-        console.log("Base drawMain");
-    }
+    // 子類別必須實作此方法
+    public abstract drawMain(): void;
 
     public drawBgToContext(): void {
         // 將背景層貼到前幕
@@ -123,7 +134,7 @@ export class BaseChart {
         div.style.fontWeight = bold;
         div.style.fontSize = size + 'pt';
         document.body.appendChild(div);
-        var aText = new TextObj(aWidth,Math.round(div.offsetHeight));
+        var aText = new TextObj(aWidth, Math.round(div.offsetHeight));
         document.body.removeChild(div);
         // Add the sizes to the cache as adding DOM elements is costly and can cause slow downs
         BaseChart.Text_Chche[aKey] = aText;
@@ -167,7 +178,7 @@ export class BaseChart {
     }
 
     // 虛線
-    public dashedLineTo(ctx: CanvasRenderingContext2D,fromX: number, fromY: number, toX: number, toY: number, pattern: number, lineColor: string): void {
+    public dashedLineTo(ctx: CanvasRenderingContext2D, fromX: number, fromY: number, toX: number, toY: number, pattern: number, lineColor: string): void {
         // default interval distance -> 5px
         if (typeof pattern === "undefined") {
             pattern = 5;
@@ -198,9 +209,9 @@ export class BaseChart {
         ctx.stroke();
         ctx.restore();
     }
-    
+
     // 直線，避免antialias
-    public clearLineTo(ctx: CanvasRenderingContext2D,fromX: number, fromY: number, toX: number, toY: number, lineColor: string, lineWidth?: number): void {     
+    public clearLineTo(ctx: CanvasRenderingContext2D, fromX: number, fromY: number, toX: number, toY: number, lineColor: string, lineWidth?: number): void {
         // default lineWidth -> 1px lineColor -> #FFFFFF
         lineWidth = lineWidth || 1;
         lineColor = lineColor || '#FFFFFF';
@@ -222,7 +233,7 @@ export class BaseChart {
     }
 
     // 任意線段，避免antialias，用矩形模擬
-    public drawLineNoAliasing(ctx: CanvasRenderingContext2D,sx: number, sy: number, tx: number, ty: number, lineColor?: string): void {      
+    public drawLineNoAliasing(ctx: CanvasRenderingContext2D, sx: number, sy: number, tx: number, ty: number, lineColor?: string): void {
         lineColor = lineColor || '#FFFFFF';
         let dist = Syspower.Util.DBP(sx, sy, tx, ty); // length of line
         let ang = Syspower.Util.getAngle(tx - sx, ty - sy); // angle of line
@@ -239,22 +250,24 @@ export class BaseChart {
 
     // 畫清晰矩形 !!注意自訂方法名稱不要取為跟物件既有的名子重覆，否則效能會很差 
     // !! NEVER TRY THIS !! : CanvasRenderingContext2D.prototype.drawRect
-    public drawRectEx(ctx: CanvasRenderingContext2D,x: number, y: number, width: number, height: number, color: string, lineWidth?: number): void {
-        this.clearLineTo(ctx,x, y, x + width, y, color, lineWidth);
-        this.clearLineTo(ctx,x + width, y, x + width, y + height, color, lineWidth);
-        this.clearLineTo(ctx,x + width, y + height, x, y + height, color, lineWidth);
-        this.clearLineTo(ctx,x, y + height, x, y, color, lineWidth);
+    public drawRectEx(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string, lineWidth?: number): void {
+        this.clearLineTo(ctx, x, y, x + width, y, color, lineWidth);
+        this.clearLineTo(ctx, x + width, y, x + width, y + height, color, lineWidth);
+        this.clearLineTo(ctx, x + width, y + height, x, y + height, color, lineWidth);
+        this.clearLineTo(ctx, x, y + height, x, y, color, lineWidth);
     }
 
     // !! NEVER DO THIS !! : CanvasRenderingContext2D.prototype.fillRect
-    public fillRectEx(ctx: CanvasRenderingContext2D,x: number, y: number, width: number, height: number, color: string): void {        
+    public fillRectEx(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string): void {
         ctx.beginPath();
         ctx.rect(x, y, width, height);
         ctx.fillStyle = color;
         ctx.fill();
     }
 
-    public drawString (ctx:CanvasRenderingContext2D, txt:string, x:number, y:number, size:number, font?:string, color?:string, align?:any, base?:any):number {
+    public drawString(ctx: CanvasRenderingContext2D, txt: string, x: number, y: number, size: number, font?: string, color?: string, align?: any, base?: any): number {
+        // 畫字串
+        ctx.save();
         color = color || "#000000";
         base = base || "bottom";
         align = align || "left";
@@ -266,29 +279,120 @@ export class BaseChart {
         if (size <= 8) {
             //因為chrome字型指定9px就不能更小，故用ctx.scale縮放處理 (x,y,size 先放大兩倍，再scale 0.5) 
             //放大前先紀錄
-            ctx.save();
             size *= 2;
             x *= 2;
             y *= 2;
             ctx.font = size + "pt " + font;
             ctx.scale(0.5, 0.5);
             ctx.fillText(txt, x, y);
-            //回復
-            ctx.restore();
         }
         else {
             ctx.fillText(txt, x, y);
         }
+        //回復
+        ctx.restore();
         return ctx.measureText(txt).width;
     }
 
+    public drawCircle(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, color?: string) {
+        // 畫圓型
+        ctx.save();
+        color = color || "#000000";
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.restore();
+    }
+
+    public getPrettyAxis(dMin: number, dMax: number, aDiv?: number) {
+        if (aDiv == undefined) { // 幾等分，預設5等分
+            aDiv = 5;
+        }
+        let ret = [];        // 回傳陣列
+        // 最大最小值乘數 dMax-(dMax+dMin)/2 = dMax/2-dMin/2
+        let factor = 0.05;
+        let aRange = Math.abs(dMax - dMin) * factor;
+        //console.log("aRange="+aRange+" dMax*factor="+(dMax*factor));
+        if (dMin < 0) {
+            dMin = dMin - aRange;
+        }
+        else if (dMin > 0) {
+            dMin = Math.max(dMin - aRange, 0);
+        }
+        if (dMax > 0) {
+            dMax = dMax + aRange;
+        }
+        else if (dMax < 0) {
+            dMax = Math.min(dMax + aRange, 0);
+        }
+
+        var diff = (dMax - dMin) / aDiv;
+        //console.log("dMin="+dMin+" dMax="+dMax+" diff="+diff);
+        // 計算等分數值
+        let segment = -1;
+        let startValue = 0;
+        for (let i = 0; i < BaseChart.Axis_Default.length; i++) {
+            if (diff <= BaseChart.Axis_Default[i]) {
+                startValue = Math.floor(dMin / BaseChart.Axis_Default[i]);
+                //console.log("startValue="+startValue+" Axis_5["+i+"]="+this.Axis_5[i]);
+                if ((startValue * BaseChart.Axis_Default[i] + BaseChart.Axis_Default[i] * (aDiv - 1)) >= dMax) {
+                    segment = BaseChart.Axis_Default[i];
+                    break;
+                }
+            }
+        }
+        // 如果Array找不到最適值，例外處理
+        if (segment == -1) {
+            // 用最大值取Log，四捨五入乘上10來當單位
+            let foo = Math.round(Math.max(Math.abs(dMin), Math.abs(dMax))).toString();
+            //console.log("foo="+((foo.length)));  
+            let foo2 = Math.pow(10, (foo.length - 1));
+            //console.log("Math.pow="+foo2);  
+            let Axis_foo = [foo2, foo2 * 1.2, foo2 * 1.5, foo2 * 2, foo2 * 2.5, foo2 * 3, foo2 * 4, foo2 * 5, foo2 * 6, foo2 * 7, foo2 * 8, foo2 * 9];
+
+            startValue = 0;
+            for (let i = 0; i < Axis_foo.length; i++) {
+                if (diff <= Axis_foo[i]) {
+                    startValue = Math.floor(dMin / Axis_foo[i]);
+                    //console.log("startValue="+startValue+" Axis_foo["+i+"]="+Axis_foo[i]);
+                    if ((startValue * Axis_foo[i] + Axis_foo[i] * (aDiv - 1)) > dMax) {
+                        segment = Axis_foo[i];
+                        break;
+                    }
+                }
+            }
+            //console.log("segment="+segment);  	
+        }
+
+        for (let i = startValue; i < startValue + aDiv; i++) {
+            ret.push(i * segment);
+        }
+        return ret;
+    }
+
+    public log10(val: number) {
+        return Math.log(val) / Math.LN10;
+    }
+
+    public mouseMove = (evt: any) => {
+        // empty implement
+    }
+    public getMousePos = (evt: any) => {
+        let rect = this.ClientRect;
+        var aPos = {
+            x: Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * this.cWidth),
+            y: Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * this.cHeight)
+        }
+        return aPos;
+    }
 }
 
 export class TextObj {
     public Width: number;
     public Height: number;
-    constructor(Width: number,Height: number) {
+    constructor(Width: number, Height: number) {
         this.Width = Width;
         this.Height = Height;
-    }    
+    }
 }

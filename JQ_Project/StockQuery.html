@@ -7,7 +7,6 @@
     <title>Test</title>
     <script src="Script/require.js"></script>
     <script src="Script/gunzip.min.js"></script>
-    <script src="Script/HashMap.js"></script>
 
     <style type="text/css">
         span.component {
@@ -52,7 +51,7 @@
     </table>
     <br />
     <hr />
-    <span class="component" id="VerifyNumber" style="width: 800px; height: 300px;"></span>
+    <span class="component" id="StockChart" style="width: 800px; height: 300px;"></span>
     <br />
     <hr />
     <table id="investTable" width="100%" border="1">
@@ -95,9 +94,8 @@
             };
 
             var chartObj = {
-                "ComponentId": "VerifyNumber", "FontType": "Arial, sans-serif", "FontSize": 32,
-                "NumberColor": "#00aa00", "BgColor": "#aaaaaa", "ChartBgColor": "#ffffff",
-                "VerifyNumber": 56789,
+                "ComponentId": "StockChart", "FontType": "Arial, sans-serif", "FontSize": 32,"AxisFontSize":10,
+                "BgColor": "#84C1FF", "ChartBgColor": "#ffffff","AxisAmount":5
                 //"PaintOnCreate": true,
             };
 

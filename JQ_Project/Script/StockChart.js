@@ -54,7 +54,7 @@ define(["require", "exports", "./Helper/index"], function (require, exports, ind
                     var hintDisplay = true;
                     var mHint = {
                         "BorderWidth": 20,
-                        "Width": 120,
+                        "Width": 150,
                         "Height": 60,
                         "BorderColor": "#000000",
                         "BgColor": "#FFFFFF",
@@ -75,17 +75,17 @@ define(["require", "exports", "./Helper/index"], function (require, exports, ind
                         var HintX = [Math.round(hintStartX + 6), Math.round(hintStartX + 20), Math.round(hintStartX + 52)];
                         // 日期
                         var yPos = Math.round(hintStartY + mHint.Height / 6 + _this.AxisHeight / 2);
-                        _this.drawString(_this.mContext, _this.ChartData[xIndex].MktDate + "", HintX[0], yPos, _this.AxisFontSize, _this.AxisFont, "#000000", "left");
+                        _this.drawString(_this.mContext, _this.ChartData[xIndex].MktDate, HintX[1], yPos, _this.AxisFontSize, _this.AxisFont, "#000000", "left");
                         // 市值
                         yPos = Math.round(hintStartY + 3 * mHint.Height / 6 + _this.AxisHeight / 2);
                         _this.drawCircle(_this.mContext, HintX[0] + 4, Math.round(hintStartY + 3 * mHint.Height / 6), 5, _this.InvColor);
-                        _this.drawString(_this.mContext, "市值:", HintX[1], yPos, _this.AxisFontSize, _this.AxisFont, "#000000", "left");
-                        _this.drawString(_this.mContext, _this.ChartData[xIndex].SumAmt + "", HintX[2], yPos, _this.AxisFontSize, _this.AxisFont, "#000000", "left");
+                        _this.drawString(_this.mContext, "市值 ", HintX[1], yPos, _this.AxisFontSize, _this.AxisFont, "#000000", "left");
+                        _this.drawString(_this.mContext, _this.addComma(_this.ChartData[xIndex].SumAmt.toFixed(2)), HintX[2], yPos, _this.AxisFontSize, _this.AxisFont, "#000000", "left");
                         // 成本
                         yPos = Math.round(hintStartY + 5 * mHint.Height / 6 + _this.AxisHeight / 2);
                         _this.drawCircle(_this.mContext, HintX[0] + 4, Math.round(hintStartY + 5 * mHint.Height / 6), 5, _this.RealColor);
-                        _this.drawString(_this.mContext, "成本:", HintX[1], yPos, _this.AxisFontSize, _this.AxisFont, "#000000", "left");
-                        _this.drawString(_this.mContext, _this.ChartData[xIndex].RealAmt + "", HintX[2], yPos, _this.AxisFontSize, _this.AxisFont, "#000000", "left");
+                        _this.drawString(_this.mContext, "成本 ", HintX[1], yPos, _this.AxisFontSize, _this.AxisFont, "#000000", "left");
+                        _this.drawString(_this.mContext, _this.addComma(_this.ChartData[xIndex].RealAmt.toFixed(2)), HintX[2], yPos, _this.AxisFontSize, _this.AxisFont, "#000000", "left");
                     }
                 }
             };

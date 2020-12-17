@@ -38,6 +38,11 @@ define(["require", "exports"], function (require, exports) {
                     b: parseInt(result[3], 16)
                 } : {};
             };
+            this.addComma = function (x) {
+                var parts = x.toString().split(".");
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                return parts.join(".");
+            };
             this.initObj = initObj;
             var ComponentId = this.getParamValue(initObj.ComponentId, "BaseChart");
             this.FontType = this.getParamValue(initObj.FontType, "Arial, sans-serif");

@@ -228,7 +228,7 @@ export class StockChart extends BaseChart {
             let hintDisplay: boolean = true;
             let mHint = {
                 "BorderWidth": 20,
-                "Width": 120,
+                "Width": 150,
                 "Height": 60,
                 "BorderColor": "#000000",
                 "BgColor": "#FFFFFF",
@@ -251,19 +251,19 @@ export class StockChart extends BaseChart {
                 let HintX = [Math.round(hintStartX + 6), Math.round(hintStartX + 20), Math.round(hintStartX + 52)];
                 // 日期
                 let yPos = Math.round(hintStartY + mHint.Height / 6 + this.AxisHeight / 2);
-                this.drawString(this.mContext, this.ChartData[xIndex].MktDate + "", HintX[0], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
+                this.drawString(this.mContext, this.ChartData[xIndex].MktDate, HintX[1], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
 
                 // 市值
                 yPos = Math.round(hintStartY + 3 * mHint.Height / 6 + this.AxisHeight / 2);
                 this.drawCircle(this.mContext, HintX[0] + 4, Math.round(hintStartY + 3 * mHint.Height / 6), 5, this.InvColor);
-                this.drawString(this.mContext, "市值:", HintX[1], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
-                this.drawString(this.mContext, this.ChartData[xIndex].SumAmt + "", HintX[2], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
+                this.drawString(this.mContext, "市值 ", HintX[1], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
+                this.drawString(this.mContext, this.addComma(this.ChartData[xIndex].SumAmt.toFixed(2)), HintX[2], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
 
                 // 成本
                 yPos = Math.round(hintStartY + 5 * mHint.Height / 6 + this.AxisHeight / 2);
                 this.drawCircle(this.mContext, HintX[0] + 4, Math.round(hintStartY + 5 * mHint.Height / 6), 5, this.RealColor);
-                this.drawString(this.mContext, "成本:", HintX[1], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
-                this.drawString(this.mContext, this.ChartData[xIndex].RealAmt + "", HintX[2], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
+                this.drawString(this.mContext, "成本 ", HintX[1], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
+                this.drawString(this.mContext, this.addComma(this.ChartData[xIndex].RealAmt.toFixed(2)), HintX[2], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
             }
 
         }

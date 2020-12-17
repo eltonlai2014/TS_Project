@@ -1,0 +1,22 @@
+#investTable {
+    font-family: Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  #investTable td, #investTable th {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  #investTable tr:nth-child(even){background-color: #f2f2f2;}
+  
+  #investTable tr:hover {background-color: #ddd;}
+  
+  #investTable th {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    text-align: left;
+    background-color: #4CAF50;
+    color: white;
+  }

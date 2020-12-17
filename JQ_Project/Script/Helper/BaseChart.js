@@ -5,15 +5,38 @@ define(["require", "exports"], function (require, exports) {
     var BaseChart = /** @class */ (function () {
         function BaseChart(initObj) {
             var _this_1 = this;
+            this.measureSize = function () {
+            };
+            // 前景繪圖，子類別若有需要則overwrite
+            this.drawFrontContext = function (mouseEvent) {
+            };
             this.mouseMove = function (evt) {
+                _this_1.mouseHandle(evt);
+            };
+            this.mouseDown = function (evt) {
+                _this_1.mouseHandle(evt);
+            };
+            this.mouseOut = function (evt) {
+                _this_1.mouseHandle(evt);
+            };
+            this.mouseHandle = function (evt) {
+                // 留給子類別處理
             };
             this.getMousePos = function (evt) {
                 var rect = _this_1.ClientRect;
-                var foo = {
+                var aPos = {
                     x: Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * _this_1.cWidth),
                     y: Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * _this_1.cHeight)
                 };
-                return foo;
+                return aPos;
+            };
+            this.hexToRgb = function (hex) {
+                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : {};
             };
             this.initObj = initObj;
             var ComponentId = this.getParamValue(initObj.ComponentId, "BaseChart");
@@ -39,7 +62,6 @@ define(["require", "exports"], function (require, exports) {
                 this.cWidth = xComponent.clientWidth;
                 //console.log("UseClientHeight=" + this.UseClientHeight + " " + this.cHeight + " " + this.cWidth);
             }
-            //aClientRect.clientHeight;
             // 產生mCanvas與mBgCanvas
             this.mCanvas = document.createElement('canvas');
             this.mCanvas.width = this.cWidth;
@@ -54,42 +76,40 @@ define(["require", "exports"], function (require, exports) {
             // this.mBgContext.imageSmoothingEnabled = false;
             // 基本設定 End =================================================================        
         }
-        /*
-            重新繪製元件 [delay] setTimeout的ms. ex:delay=0 , 執行完畢呼叫callback function
-        */
+        // 搭配建構子 initObj: any，取參數的方法
+        BaseChart.prototype.getParamValue = function (aValue, def) {
+            if (typeof aValue === "undefined" || aValue === null) {
+                return def;
+            }
+            return aValue;
+        };
+        // 重新繪製元件 [delay] setTimeout的毫秒數 ex:delay=1000為1秒 , 執行完畢呼叫callback function
         BaseChart.prototype.repaint = function (delay, callback) {
             delay = delay || 0;
-            console.log("repaint " + delay + " callback=" + callback);
+            //console.log("repaint " + delay + " callback=" + callback);
             var _this = this;
             try {
                 setTimeout(function () {
                     _this.drawMain();
                     _this.drawBgToContext();
                     if (callback instanceof Function) {
-                        callback("repaint(" + delay + ") finish...");
+                        callback("repaint(" + delay + ") finish ");
                     }
                 }, delay);
             }
             catch (err) {
-                if (callback instanceof Function) {
-                    callback("repaint(" + delay + ") " + err.message);
-                }
+                console.log("repaint(" + delay + ") error, " + err.message);
             }
         };
-        BaseChart.prototype.getParamValue = function (aValue, def) {
-            if (aValue === undefined || aValue === null) {
-                return def;
-            }
-            return aValue;
-        };
-        BaseChart.prototype.drawBgToContext = function () {
-            // 將背景層貼到前幕
+        BaseChart.prototype.drawBgToContext = function (mouseEvent) {
+            // 將背景層貼到前景
             this.mContext.clearRect(0, 0, this.cWidth, this.cHeight);
             this.mContext.drawImage(this.mBgCanvas, 0, 0);
+            // 前景繪圖，搭配mouseEvent
+            this.drawFrontContext(mouseEvent);
         };
         //  字串池 
         //  let aText: TextObj = this.MeasureText("00000000", "normal", this.AxisFont, this.AxisFontSize);
-        //  
         BaseChart.prototype.MeasureText = function (text, bold, font, size) {
             // This global variable is used to cache repeated calls with the same arguments
             var aKey = text + ':' + bold + ':' + font + ':' + size;
@@ -101,7 +121,7 @@ define(["require", "exports"], function (require, exports) {
                 this.mBgContext.font = size + "pt " + font;
                 aWidth = this.mBgContext.measureText(text).width;
             }
-            // 高度取法(新增一個不可見標籤，取offsetHeight，刪除，加入快取)
+            // 字串高度取法(新增一個不可見標籤，取offsetHeight，刪除，加入快取)
             var div = document.createElement("MyDIV");
             div.innerHTML = text;
             div.style.position = 'absolute';
@@ -118,8 +138,8 @@ define(["require", "exports"], function (require, exports) {
             return aText;
         };
         // 圓角矩形
-        BaseChart.prototype.roundRect = function (ctx, x, y, width, height, radius, fill, stroke) {
-            if (typeof stroke == "undefined") {
+        BaseChart.prototype.drawRoundRect = function (ctx, x, y, width, height, radius, fill, stroke, lineWidth) {
+            if (typeof stroke === "undefined") {
                 stroke = true;
             }
             if (typeof fill === "undefined") {
@@ -128,6 +148,7 @@ define(["require", "exports"], function (require, exports) {
             if (typeof radius === "undefined") {
                 radius = 5;
             }
+            lineWidth = lineWidth || 1.2;
             //x = Math.round(x);
             //y = Math.round(y);
             ctx.save();
@@ -143,6 +164,7 @@ define(["require", "exports"], function (require, exports) {
             ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
             ctx.lineTo(x, y + radius);
             ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.lineWidth = lineWidth;
             ctx.closePath();
             if (stroke) {
                 ctx.stroke();
@@ -188,7 +210,7 @@ define(["require", "exports"], function (require, exports) {
         BaseChart.prototype.clearLineTo = function (ctx, fromX, fromY, toX, toY, lineColor, lineWidth) {
             // default lineWidth -> 1px lineColor -> #FFFFFF
             lineWidth = lineWidth || 1;
-            lineColor = lineColor || '#FFFFFF';
+            lineColor = lineColor || '#000000';
             // 避免畫線時產生antialias，save()->translate()->restore()
             ctx.save();
             ctx.translate(0.5, 0.5);
@@ -206,29 +228,31 @@ define(["require", "exports"], function (require, exports) {
             ctx.restore();
         };
         // 任意線段，避免antialias，用矩形模擬
-        BaseChart.prototype.drawLineNoAliasing = function (ctx, sx, sy, tx, ty, lineColor) {
+        /*
+        public drawLineNoAliasing(ctx: CanvasRenderingContext2D, sx: number, sy: number, tx: number, ty: number, lineColor?: string): void {
             lineColor = lineColor || '#FFFFFF';
-            var dist = Syspower.Util.DBP(sx, sy, tx, ty); // length of line
-            var ang = Syspower.Util.getAngle(tx - sx, ty - sy); // angle of line
+            let dist = Syspower.Util.DBP(sx, sy, tx, ty); // length of line
+            let ang = Syspower.Util.getAngle(tx - sx, ty - sy); // angle of line
             ctx.save();
             ctx.fillStyle = lineColor;
-            for (var i = 0; i < dist; i++) {
+            for (let i = 0; i < dist; i++) {
                 // for each point along the line
                 ctx.fillRect(Math.round(sx + Math.cos(ang) * i), // round for perfect pixels
-                Math.round(sy + Math.sin(ang) * i), // thus no aliasing
-                1, 1); // fill in one pixel, 1x1
+                    Math.round(sy + Math.sin(ang) * i), // thus no aliasing
+                    1, 1); // fill in one pixel, 1x1
             }
             ctx.restore();
-        };
+        }
+        */
         // 畫清晰矩形 !!注意自訂方法名稱不要取為跟物件既有的名子重覆，否則效能會很差 
-        // !! NEVER TRY THIS !! : CanvasRenderingContext2D.prototype.drawRect
+        // !! JS NEVER TRY THIS !! : CanvasRenderingContext2D.prototype.drawRect
         BaseChart.prototype.drawRectEx = function (ctx, x, y, width, height, color, lineWidth) {
             this.clearLineTo(ctx, x, y, x + width, y, color, lineWidth);
             this.clearLineTo(ctx, x + width, y, x + width, y + height, color, lineWidth);
             this.clearLineTo(ctx, x + width, y + height, x, y + height, color, lineWidth);
             this.clearLineTo(ctx, x, y + height, x, y, color, lineWidth);
         };
-        // !! NEVER DO THIS !! : CanvasRenderingContext2D.prototype.fillRect
+        // !! JS NEVER DO THIS !! : CanvasRenderingContext2D.prototype.fillRect
         BaseChart.prototype.fillRectEx = function (ctx, x, y, width, height, color) {
             ctx.beginPath();
             ctx.rect(x, y, width, height);
@@ -259,9 +283,10 @@ define(["require", "exports"], function (require, exports) {
             else {
                 ctx.fillText(txt, x, y);
             }
+            var wordWidth = ctx.measureText(txt).width;
             //回復
             ctx.restore();
-            return ctx.measureText(txt).width;
+            return wordWidth;
         };
         BaseChart.prototype.drawCircle = function (ctx, x, y, radius, color) {
             // 畫圓型
@@ -359,4 +384,16 @@ define(["require", "exports"], function (require, exports) {
         return TextObj;
     }());
     exports.TextObj = TextObj;
+    var MyMouseEvent = /** @class */ (function () {
+        function MyMouseEvent(XPos, YPos, EventType) {
+            this.XPos = 0;
+            this.YPos = 0;
+            this.EventType = "";
+            this.XPos = XPos;
+            this.YPos = YPos;
+            this.EventType = EventType;
+        }
+        return MyMouseEvent;
+    }());
+    exports.MyMouseEvent = MyMouseEvent;
 });

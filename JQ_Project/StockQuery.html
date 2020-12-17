@@ -4,10 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test</title>
+    <title>股票定期定額測試</title>
     <script src="Script/require.js"></script>
     <script src="Script/gunzip.min.js"></script>
-
     <style type="text/css">
         span.component {
             display: inline-block;
@@ -46,7 +45,7 @@
         </tr>
         <tr>
             <td>投資區間</td>
-            <td><input type="text" id="xDate" value="2020-01-01"> ~ 至今</td>
+            <td><input type="text" id="xDate" value="2020-11-01"> ~ 至今</td>
         </tr>
     </table>
     <br />
@@ -94,8 +93,8 @@
             };
 
             var chartObj = {
-                "ComponentId": "StockChart", "FontType": "Arial, sans-serif", "FontSize": 32,"AxisFontSize":10,
-                "BgColor": "#84C1FF", "ChartBgColor": "#ffffff","AxisAmount":5
+                "ComponentId": "StockChart", "FontType": "Arial, sans-serif", "FontSize": 32, "AxisFontSize": 10,
+                "BgColor": "#84C1FF", "ChartBgColor": "#ffffff", "AxisAmount": 5
                 //"PaintOnCreate": true,
             };
 
@@ -128,7 +127,7 @@
                 $("#investTable tr:gt(0)").remove();
                 $('#investTable').append(aTickList.join(""));
 
-                aStockChart.setData(data,invList);
+                aStockChart.setData(data, invList);
                 aStockChart.repaint();
 
             }
@@ -226,7 +225,7 @@
                 event.preventDefault();
                 $("#xStockId").val("2330");
                 $("#xMoney").val("50000");
-                $("#xDate").val("2020-01-01");
+                $("#xDate").val("2020-11-01");
 
                 console.log("06-> " + $(".chk06").prop('checked'));
                 console.log("16-> " + $(".chk16").prop('checked'));
@@ -240,7 +239,12 @@
                     $("#xStockId").focus();
                     return;
                 }
-
+                if ($(".chk06").prop('checked') || $(".chk16").prop('checked') || $(".chk26").prop('checked')) {
+                }
+                else {
+                    // 請選擇一種扣款方式
+                    return;
+                }
 
                 // 是否需要Server端壓縮、Client端解壓縮
                 let xGZip = true;

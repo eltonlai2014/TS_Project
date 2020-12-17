@@ -12,7 +12,7 @@ export abstract class BaseChart {
     FontType: string;
     FontSize: number;
     UseClientHeight: boolean;
-    ClientRect:any;
+    ClientRect: any;
     static Text_Chche: any = {};                                                                // 字串池
     static Axis_Default: number[] = [
         0.1, 0.2, 0.25, 0.5, 0.8,
@@ -52,7 +52,6 @@ export abstract class BaseChart {
             //console.log("UseClientHeight=" + this.UseClientHeight + " " + this.cHeight + " " + this.cWidth);
         }
 
-        //aClientRect.clientHeight;
         // 產生mCanvas與mBgCanvas
         this.mCanvas = document.createElement('canvas') as HTMLCanvasElement;
         this.mCanvas.width = this.cWidth;
@@ -66,52 +65,57 @@ export abstract class BaseChart {
         // 避免antialias(應該沒效)
         // this.mContext.imageSmoothingEnabled = false;
         // this.mBgContext.imageSmoothingEnabled = false;
-
         // 基本設定 End =================================================================        
     }
 
-    /*
-        重新繪製元件 [delay] setTimeout的ms. ex:delay=0 , 執行完畢呼叫callback function
-    */
+    // 搭配建構子 initObj: any，取參數的方法
+    public getParamValue(aValue: any, def: any): any {
+        if (typeof aValue === "undefined" || aValue === null) {
+            return def;
+        }
+        return aValue;
+    }
+
+    public measureSize = () => {
+
+    }
+
+    // 重新繪製元件 [delay] setTimeout的毫秒數 ex:delay=1000為1秒 , 執行完畢呼叫callback function
     public repaint(delay?: number, callback?: Function | null): void {
         delay = delay || 0;
-        console.log("repaint " + delay + " callback=" + callback);
+        //console.log("repaint " + delay + " callback=" + callback);
         let _this = this;
         try {
             setTimeout(() => {
                 _this.drawMain();
                 _this.drawBgToContext();
                 if (callback instanceof Function) {
-                    callback("repaint(" + delay + ") finish...");
+                    callback("repaint(" + delay + ") finish ");
                 }
             }, delay);
         }
         catch (err) {
-            if (callback instanceof Function) {
-                callback("repaint(" + delay + ") " + err.message);
-            }
+            console.log("repaint(" + delay + ") error, " + err.message);
         }
-    }
-
-    public getParamValue(aValue: any, def: any): any {
-        if (aValue === undefined || aValue === null) {
-            return def;
-        }
-        return aValue;
     }
 
     // 子類別必須實作此方法
     public abstract drawMain(): void;
 
-    public drawBgToContext(): void {
-        // 將背景層貼到前幕
+    public drawBgToContext(mouseEvent?: MyMouseEvent): void {
+        // 將背景層貼到前景
         this.mContext.clearRect(0, 0, this.cWidth, this.cHeight);
         this.mContext.drawImage(this.mBgCanvas, 0, 0);
+        // 前景繪圖，搭配mouseEvent
+        this.drawFrontContext(mouseEvent);
+    }
+
+    // 前景繪圖，子類別若有需要則overwrite
+    public drawFrontContext = (mouseEvent?: MyMouseEvent): void => {
     }
 
     //  字串池 
     //  let aText: TextObj = this.MeasureText("00000000", "normal", this.AxisFont, this.AxisFontSize);
-    //  
     public MeasureText(text: string, bold: string, font: string, size: number): TextObj {
         // This global variable is used to cache repeated calls with the same arguments
         let aKey: string = text + ':' + bold + ':' + font + ':' + size;
@@ -124,7 +128,7 @@ export abstract class BaseChart {
             aWidth = this.mBgContext.measureText(text).width;
         }
 
-        // 高度取法(新增一個不可見標籤，取offsetHeight，刪除，加入快取)
+        // 字串高度取法(新增一個不可見標籤，取offsetHeight，刪除，加入快取)
         var div = document.createElement("MyDIV");
         div.innerHTML = text;
         div.style.position = 'absolute';
@@ -142,8 +146,8 @@ export abstract class BaseChart {
     }
 
     // 圓角矩形
-    public roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius?: number, fill?: boolean, stroke?: boolean): void {
-        if (typeof stroke == "undefined") {
+    public drawRoundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius?: number, fill?: boolean, stroke?: boolean, lineWidth?: number): void {
+        if (typeof stroke === "undefined") {
             stroke = true;
         }
         if (typeof fill === "undefined") {
@@ -152,6 +156,7 @@ export abstract class BaseChart {
         if (typeof radius === "undefined") {
             radius = 5;
         }
+        lineWidth = lineWidth || 1.2;
         //x = Math.round(x);
         //y = Math.round(y);
         ctx.save();
@@ -167,6 +172,7 @@ export abstract class BaseChart {
         ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
         ctx.lineTo(x, y + radius);
         ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.lineWidth = lineWidth;
         ctx.closePath();
         if (stroke) {
             ctx.stroke();
@@ -211,10 +217,10 @@ export abstract class BaseChart {
     }
 
     // 直線，避免antialias
-    public clearLineTo(ctx: CanvasRenderingContext2D, fromX: number, fromY: number, toX: number, toY: number, lineColor: string, lineWidth?: number): void {
+    public clearLineTo(ctx: CanvasRenderingContext2D, fromX: number, fromY: number, toX: number, toY: number, lineColor?: string, lineWidth?: number): void {
         // default lineWidth -> 1px lineColor -> #FFFFFF
         lineWidth = lineWidth || 1;
-        lineColor = lineColor || '#FFFFFF';
+        lineColor = lineColor || '#000000';
         // 避免畫線時產生antialias，save()->translate()->restore()
         ctx.save();
         ctx.translate(0.5, 0.5);
@@ -233,6 +239,7 @@ export abstract class BaseChart {
     }
 
     // 任意線段，避免antialias，用矩形模擬
+    /*
     public drawLineNoAliasing(ctx: CanvasRenderingContext2D, sx: number, sy: number, tx: number, ty: number, lineColor?: string): void {
         lineColor = lineColor || '#FFFFFF';
         let dist = Syspower.Util.DBP(sx, sy, tx, ty); // length of line
@@ -247,9 +254,10 @@ export abstract class BaseChart {
         }
         ctx.restore();
     }
+    */
 
     // 畫清晰矩形 !!注意自訂方法名稱不要取為跟物件既有的名子重覆，否則效能會很差 
-    // !! NEVER TRY THIS !! : CanvasRenderingContext2D.prototype.drawRect
+    // !! JS NEVER TRY THIS !! : CanvasRenderingContext2D.prototype.drawRect
     public drawRectEx(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string, lineWidth?: number): void {
         this.clearLineTo(ctx, x, y, x + width, y, color, lineWidth);
         this.clearLineTo(ctx, x + width, y, x + width, y + height, color, lineWidth);
@@ -257,7 +265,7 @@ export abstract class BaseChart {
         this.clearLineTo(ctx, x, y + height, x, y, color, lineWidth);
     }
 
-    // !! NEVER DO THIS !! : CanvasRenderingContext2D.prototype.fillRect
+    // !! JS NEVER DO THIS !! : CanvasRenderingContext2D.prototype.fillRect
     public fillRectEx(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string): void {
         ctx.beginPath();
         ctx.rect(x, y, width, height);
@@ -289,9 +297,10 @@ export abstract class BaseChart {
         else {
             ctx.fillText(txt, x, y);
         }
+        let wordWidth: number = ctx.measureText(txt).width;
         //回復
         ctx.restore();
-        return ctx.measureText(txt).width;
+        return wordWidth;
     }
 
     public drawCircle(ctx: CanvasRenderingContext2D, x: number, y: number, radius: number, color?: string) {
@@ -375,16 +384,34 @@ export abstract class BaseChart {
         return Math.log(val) / Math.LN10;
     }
 
-    public mouseMove = (evt: any) => {
-        // empty implement
+    public mouseMove = (evt: MouseEvent) => {
+        this.mouseHandle(evt);
     }
-    public getMousePos = (evt: any) => {
+    public mouseDown = (evt: MouseEvent) => {
+        this.mouseHandle(evt);
+    }
+
+    public mouseOut = (evt: MouseEvent) => {
+        this.mouseHandle(evt);
+    }
+    public mouseHandle = (evt: MouseEvent) => {
+        // 留給子類別處理
+    }
+    public getMousePos = (evt: MouseEvent) => {
         let rect = this.ClientRect;
         var aPos = {
             x: Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * this.cWidth),
             y: Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * this.cHeight)
         }
         return aPos;
+    }
+    public hexToRgb = (hex: string) => {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : {};
     }
 }
 
@@ -394,5 +421,16 @@ export class TextObj {
     constructor(Width: number, Height: number) {
         this.Width = Width;
         this.Height = Height;
+    }
+}
+
+export class MyMouseEvent {
+    public XPos: number = 0;
+    public YPos: number = 0;
+    public EventType: string = "";
+    constructor(XPos: number, YPos: number, EventType: string) {
+        this.XPos = XPos;
+        this.YPos = YPos;
+        this.EventType = EventType;
     }
 }

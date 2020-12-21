@@ -23,7 +23,7 @@ define(["require", "exports"], function (require, exports) {
                 // 留給子類別處理
             };
             this.getMousePos = function (evt) {
-                var rect = _this_1.ClientRect;
+                var rect = _this_1.mClientRect;
                 var aPos = {
                     x: Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * _this_1.cWidth),
                     y: Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * _this_1.cHeight)
@@ -45,21 +45,20 @@ define(["require", "exports"], function (require, exports) {
             };
             this.initObj = initObj;
             var ComponentId = this.getParamValue(initObj.ComponentId, "BaseChart");
-            this.FontType = this.getParamValue(initObj.FontType, "Arial, sans-serif");
-            this.FontSize = this.getParamValue(initObj.FontSize, 26); // 字型大小　　　　　　
-            this.BgColor = this.getParamValue(initObj.BgColor, "#FFFFFF"); // 背景顏色
-            this.ChartBgColor = this.getParamValue(initObj.ChartBgColor, "#FFFFFF"); // 圖型背景顏色
-            this.UseClientHeight = this.getParamValue(initObj.UseClientHeight, false);
+            this.mFontType = this.getParamValue(initObj.FontType, "Arial, sans-serif");
+            this.mFontSize = this.getParamValue(initObj.FontSize, 26); // 字型大小　　　　　　
+            this.mBgColor = this.getParamValue(initObj.BgColor, "#FFFFFF"); // 背景顏色
+            this.mChartBgColor = this.getParamValue(initObj.ChartBgColor, "#FFFFFF"); // 圖型背景顏色
+            this.mUseClientHeight = this.getParamValue(initObj.UseClientHeight, false);
             // 基本設定 ====================================================================
             // 取得Component寬度+高度
             // "strictNullChecks": true
             // assert aComponent is not null
             var aComponent = document.querySelector("#" + ComponentId);
-            var aClientRect = aComponent.getBoundingClientRect();
-            this.ClientRect = aClientRect;
-            this.cHeight = aClientRect.height;
-            this.cWidth = aClientRect.width;
-            if (this.UseClientHeight) {
+            this.mClientRect = aComponent.getBoundingClientRect();
+            this.cHeight = this.mClientRect.height;
+            this.cWidth = this.mClientRect.width;
+            if (this.mUseClientHeight) {
                 var xComponent = document.getElementById(ComponentId);
                 // "strictNullChecks": true
                 // assert aComponent is not null,need to write -> xComponent!.clientHeight 
@@ -83,7 +82,7 @@ define(["require", "exports"], function (require, exports) {
         }
         // 搭配建構子 initObj: any，取參數的方法
         BaseChart.prototype.getParamValue = function (aValue, def) {
-            if (typeof aValue === "undefined" || aValue === null) {
+            if (typeof aValue === "undefined" || aValue === undefined || aValue === null) {
                 return def;
             }
             return aValue;
@@ -391,9 +390,6 @@ define(["require", "exports"], function (require, exports) {
     exports.TextObj = TextObj;
     var MyMouseEvent = /** @class */ (function () {
         function MyMouseEvent(XPos, YPos, EventType) {
-            this.XPos = 0;
-            this.YPos = 0;
-            this.EventType = "";
             this.XPos = XPos;
             this.YPos = YPos;
             this.EventType = EventType;

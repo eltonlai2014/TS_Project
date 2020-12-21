@@ -18,7 +18,7 @@
 </head>
 
 <body>
-    <table class="controlTable" width="100%" border="1">
+    <table class="InvTable" width="100%" border="1">
         <tr>
             <td colspan="2">
                 <div id="controlPanel">
@@ -54,7 +54,28 @@
     <span class="component" id="StockChart" style="width: 800px; height: 300px;"></span>
     <br />
     <hr />
-    <table id="investTable" width="100%" border="1">
+
+    <table class="InvTable" width="100%" border="1">
+        <tr>
+            <td width="15%">合計股數</td>
+            <td> <span id="SumShares"></span></td>
+        </tr>
+        <tr>
+            <td>合計成本</td>
+            <td> <span id="SumAmt"></span></td>
+        </tr>
+        <tr>
+            <td width="15%">股票市值</td>
+            <td> <span id="RealAmt"></span></td>
+        </tr>
+        <tr>
+            <td>獲利率</td>
+            <td> <span id="InvROI"></span></td>
+        </tr>
+    </table>
+    <br />
+
+    <table id="investTable" class="InvTable" width="100%" border="1">
         <tr>
             <th>申請扣款日</th>
             <th>實際扣款日</th>
@@ -95,12 +116,12 @@
 
             var chartObj = {
                 "ComponentId": "StockChart", "FontType": "Arial, sans-serif", "FontSize": 32, "AxisFontSize": 10,
-                "BgColor": "#84C1FF", "ChartBgColor": "#ffffff", "AxisAmount": 5
+                "BgColor": "#84C1FF", "ChartBgColor": "#ffffff", "AxisAmount": 5,
+                "TopHeight": 30, "BottomHeight": 30, "TitleFontSize": 16, "TitleLabel": "2330 定期定額獲利率",
+                "ShowChartBorder": true, "ShowQuoteLine": true, "QuoteLineColor": "#111111"
                 //"PaintOnCreate": true,
             };
-
             var aStockChart = new SyspowerLib2.StockChart(chartObj);
-
 
             function mCallbackHandler(data) {
                 //console.log(data);
@@ -130,6 +151,13 @@
 
                 aStockChart.setData(data, invList);
                 aStockChart.repaint();
+                var aInvResult = aStockChart.getInvResult();
+                //console.log(aInvResult);
+                // 更新報酬狀態
+                $("#SumShares").html(addComma(aInvResult.SumShares));
+                $("#SumAmt").html(addComma(aInvResult.SumAmt));
+                $("#RealAmt").html(addComma(aInvResult.RealAmt));
+                $("#InvROI").html(((aInvResult.RealAmt - aInvResult.SumAmt) / aInvResult.SumAmt * 100).toFixed(2) + "%");
 
             }
 

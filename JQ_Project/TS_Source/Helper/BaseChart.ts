@@ -7,12 +7,12 @@ export abstract class BaseChart {
     cHeight: number;
     mContext: CanvasRenderingContext2D;
     mBgContext: CanvasRenderingContext2D;
-    BgColor: string;
-    ChartBgColor: string;
-    FontType: string;
-    FontSize: number;
-    UseClientHeight: boolean;
-    ClientRect: any;
+    mBgColor: string;
+    mChartBgColor: string;
+    mFontType: string;
+    mFontSize: number;
+    mUseClientHeight: boolean;
+    mClientRect: any;
     static Text_Chche: any = {};                                                                // 字串池
     static Axis_Default: number[] = [
         0.1, 0.2, 0.25, 0.5, 0.8,
@@ -27,11 +27,11 @@ export abstract class BaseChart {
     constructor(initObj: any) {
         this.initObj = initObj;
         let ComponentId = this.getParamValue(initObj.ComponentId, "BaseChart");
-        this.FontType = this.getParamValue(initObj.FontType, "Arial, sans-serif");
-        this.FontSize = this.getParamValue(initObj.FontSize, 26);　　　　　　　                   // 字型大小　　　　　　
-        this.BgColor = this.getParamValue(initObj.BgColor, "#FFFFFF");                          // 背景顏色
-        this.ChartBgColor = this.getParamValue(initObj.ChartBgColor, "#FFFFFF");                // 圖型背景顏色
-        this.UseClientHeight = this.getParamValue(initObj.UseClientHeight, false);
+        this.mFontType = this.getParamValue(initObj.FontType, "Arial, sans-serif");
+        this.mFontSize = this.getParamValue(initObj.FontSize, 26);　　　　　　　                   // 字型大小　　　　　　
+        this.mBgColor = this.getParamValue(initObj.BgColor, "#FFFFFF");                          // 背景顏色
+        this.mChartBgColor = this.getParamValue(initObj.ChartBgColor, "#FFFFFF");                // 圖型背景顏色
+        this.mUseClientHeight = this.getParamValue(initObj.UseClientHeight, false);
 
         // 基本設定 ====================================================================
         // 取得Component寬度+高度
@@ -39,11 +39,10 @@ export abstract class BaseChart {
         // assert aComponent is not null
         let aComponent: HTMLElement | null = document.querySelector("#" + ComponentId);
 
-        let aClientRect = aComponent!.getBoundingClientRect();
-        this.ClientRect = aClientRect;
-        this.cHeight = aClientRect.height;
-        this.cWidth = aClientRect.width;
-        if (this.UseClientHeight) {
+        this.mClientRect = aComponent!.getBoundingClientRect();
+        this.cHeight = this.mClientRect.height;
+        this.cWidth = this.mClientRect.width;
+        if (this.mUseClientHeight) {
             let xComponent: HTMLElement | null = document.getElementById(ComponentId);
             // "strictNullChecks": true
             // assert aComponent is not null,need to write -> xComponent!.clientHeight 
@@ -70,7 +69,7 @@ export abstract class BaseChart {
 
     // 搭配建構子 initObj: any，取參數的方法
     public getParamValue(aValue: any, def: any): any {
-        if (typeof aValue === "undefined" || aValue === null) {
+        if (typeof aValue === "undefined" || aValue === undefined || aValue === null) {
             return def;
         }
         return aValue;
@@ -398,7 +397,7 @@ export abstract class BaseChart {
         // 留給子類別處理
     }
     public getMousePos = (evt: MouseEvent) => {
-        let rect = this.ClientRect;
+        let rect = this.mClientRect;
         var aPos = {
             x: Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * this.cWidth),
             y: Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * this.cHeight)
@@ -414,7 +413,7 @@ export abstract class BaseChart {
         } : {};
     }
 
-    public addComma = (x:any) => {
+    public addComma = (x: any) => {
         var parts = x.toString().split(".");
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         return parts.join(".");
@@ -432,9 +431,9 @@ export class TextObj {
 }
 
 export class MyMouseEvent {
-    public XPos: number = 0;
-    public YPos: number = 0;
-    public EventType: string = "";
+    public XPos: number;
+    public YPos: number;
+    public EventType: string;
     constructor(XPos: number, YPos: number, EventType: string) {
         this.XPos = XPos;
         this.YPos = YPos;

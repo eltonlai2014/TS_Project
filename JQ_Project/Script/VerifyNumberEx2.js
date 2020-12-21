@@ -35,7 +35,7 @@ define(["require", "exports", "./Helper/BaseChart"], function (require, exports,
             // 畫驗證碼
             // 背景色
             var xNumber = "";
-            this.mBgContext.fillStyle = this.BgColor;
+            this.mBgContext.fillStyle = this.mBgColor;
             this.mBgContext.fillRect(0, 0, this.cWidth, this.cHeight);
             // 產生驗證碼
             if (this.VerifyNumber) {
@@ -47,7 +47,7 @@ define(["require", "exports", "./Helper/BaseChart"], function (require, exports,
                 xNumber = this.genNumber(1, this.MaxNumber);
             }
             this.mBgContext.fillStyle = this.NumberColor;
-            this.mBgContext.font = 'bold ' + this.FontSize + "pt " + this.FontType;
+            this.mBgContext.font = 'bold ' + this.mFontSize + "pt " + this.mFontType;
             // 畫在中間
             this.mBgContext.textAlign = 'center';
             this.mBgContext.textBaseline = 'middle';

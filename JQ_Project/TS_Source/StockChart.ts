@@ -3,53 +3,71 @@
 import { BaseChart, TextObj, HashMap, MyMouseEvent } from "./Helper/index";
 
 export class StockChart extends BaseChart {
-    NumberColor: any;
-    ChartData: any = {};
-    BorderWidth: number;
-    BorderHeight: number;
-    ChartHeight: number;
-    ChartWidth: number;
-    ChartRectWidth: number = 0;
-    AxisFont: string;
-    AxisFontSize: number;
-    AxisWidth: number;
-    AxisHeight: number;
-    AxisColor: string;
-    AxisAmount: number;
-    //RectAmounts: number;
-    MaxRealAmt: number = 0;
-    MinRealAmt: number = 0;
-    PrettyAxis: number[] = [];
-    InvColor: string = "#0000FF";
-    RealColor: string = "#FF0000";
+    mChartData: any = {};
+    mBorderWidth: number;
+
+    mTopHeight: number;
+    mBottomHeight: number;
+    mChartHeight: number;
+    mChartWidth: number;
+    mChartRectWidth: number = 0;
+    mAxisFont: string;
+    mAxisFontSize: number;
+    mAxisWidth: number;
+    mAxisHeight: number;
+    mAxisColor: string;
+    mAxisAmount: number;
+    mTitleFont: string;
+    mTitleFontSize: number;
+    mTitleLabel:string;
+
+    mShowChartBorder : boolean;
+    mShowQuoteLine : boolean;
+    mQuoteLineColor :string;
+    mMaxRealAmt: number = 0;
+    mMinRealAmt: number = 0;
+    mPrettyAxis: number[] = [];
+    mInvColor: string;
+    mRealColor: string;
 
     constructor(initObj: any) {
         super(initObj);
         let ComponentId = this.getParamValue(initObj.ComponentId, "");
 
-        this.BorderWidth = this.getParamValue(initObj.BorderWidth, 14);
-        this.BorderHeight = this.getParamValue(initObj.BorderHeight, 14);
-        this.AxisFont = this.getParamValue(initObj.AxisFont, this.FontType);
-        this.AxisFontSize = this.getParamValue(initObj.AxisFontSize, 9);
-        this.AxisWidth = this.getParamValue(initObj.AxisWidth, 59);
-        this.AxisAmount = this.getParamValue(initObj.AxisAmount, 5);
-        this.AxisAmount = this.getParamValue(initObj.AxisAmount, 5);
-        this.AxisColor = this.getParamValue(initObj.AxisColor, "#111111");                        // 坐標軸Label
+        this.mBorderWidth = this.getParamValue(initObj.BorderWidth, 14);
+        this.mTopHeight = this.getParamValue(initObj.TopHeight, 14);
+        this.mBottomHeight = this.getParamValue(initObj.BottomHeight, 14);
+        this.mAxisFont = this.getParamValue(initObj.AxisFont, this.mFontType);
+        this.mAxisFontSize = this.getParamValue(initObj.AxisFontSize, 9);
+        this.mAxisWidth = this.getParamValue(initObj.AxisWidth, 59);
+        this.mAxisAmount = this.getParamValue(initObj.AxisAmount, 5);
+        this.mAxisAmount = this.getParamValue(initObj.AxisAmount, 5);
+        this.mAxisColor = this.getParamValue(initObj.AxisColor, "#111111");                        // 坐標軸Label顏色
 
-        //this.RectAmounts = this.getParamValue(initObj.RectAmounts, 80);                         // 畫面資料筆數
+        this.mTitleFont = this.getParamValue(initObj.TitleFont, this.mFontType);
+        this.mTitleFontSize = this.getParamValue(initObj.TitleFontSize, 9);
+        this.mTitleLabel = this.getParamValue(initObj.TitleLabel, "");
+        
+        this.mShowChartBorder = this.getParamValue(initObj.ShowChartBorder, false);
+        this.mShowQuoteLine = this.getParamValue(initObj.ShowQuoteLine, true);
+        this.mQuoteLineColor = this.getParamValue(initObj.QuoteLineColor, "#111111");
+
+        this.mInvColor = this.getParamValue(initObj.InvColor, "#0000FF");                          // 投資顏色
+        this.mRealColor = this.getParamValue(initObj.RealColor, "#FF0000");                        // 市值顏色
+        //this.RectAmounts = this.getParamValue(initObj.RectAmounts, 80);                          // 畫面資料筆數
 
         // 頁面加入<Canvas>標籤
         var aComponent: HTMLElement | null = document.querySelector("#" + ComponentId);
         aComponent!.appendChild(this.mCanvas);
 
-        console.log(this.ClientRect);
+        console.log(this.mClientRect);
 
-        let aText: TextObj = this.MeasureText("00000000", "normal", this.AxisFont, this.AxisFontSize);
-        this.AxisWidth = aText.Width;
-        this.AxisHeight = aText.Height;
+        let aText: TextObj = this.MeasureText("00000000", "normal", this.mAxisFont, this.mAxisFontSize);
+        this.mAxisWidth = aText.Width;
+        this.mAxisHeight = aText.Height;
 
-        this.ChartHeight = this.cHeight - this.BorderHeight * 2;
-        this.ChartWidth = this.cWidth - this.AxisWidth - this.BorderWidth;
+        this.mChartHeight = this.cHeight - this.mTopHeight - this.mBottomHeight;
+        this.mChartWidth = this.cWidth - this.mAxisWidth - this.mBorderWidth;
 
         let PaintOnCreate: boolean = this.getParamValue(initObj.PaintOnCreate, false);
         if (PaintOnCreate) {
@@ -86,8 +104,8 @@ export class StockChart extends BaseChart {
     }
 
     public setData(data: any, invList: any): void {
-        this.MinRealAmt = 999999999;
-        this.MaxRealAmt = 0;
+        this.mMinRealAmt = 999999999;
+        this.mMaxRealAmt = 0;
         if (invList.length > 0) {
             // 投資開始日期
             let startDate = invList[0].MktDate;
@@ -126,15 +144,25 @@ export class StockChart extends BaseChart {
                 }
                 // 實際市值 = 累計股數 * 收盤價
                 data[i].RealAmt = data[i].SumShares * data[i].CP;
-                this.MaxRealAmt = Math.max(this.MaxRealAmt, data[i].RealAmt);
-                this.MinRealAmt = Math.min(this.MinRealAmt, data[i].RealAmt);
+                this.mMaxRealAmt = Math.max(this.mMaxRealAmt, data[i].RealAmt);
+                this.mMinRealAmt = Math.min(this.mMinRealAmt, data[i].RealAmt);
             }
         }
 
         // 最大最小值取整數
         this.calMaxMin();
-        this.ChartData = data;
+        this.mChartData = data;
 
+    }
+
+    public getInvResult(): any {
+        let ret: any = {};
+        if (this.mChartData.length > 0) {
+            ret.SumShares = this.mChartData[this.mChartData.length - 1].SumShares;
+            ret.SumAmt = this.mChartData[this.mChartData.length - 1].SumAmt;
+            ret.RealAmt = this.mChartData[this.mChartData.length - 1].RealAmt;
+        }
+        return ret;
     }
 
     public drawChartArea(): void {
@@ -142,38 +170,47 @@ export class StockChart extends BaseChart {
         // 畫底圖與座標軸
         this.drawAxis();
 
-        let xChartData = this.ChartData;
+        let xChartData = this.mChartData;
         console.log(xChartData);
         // X軸間隔
-        this.ChartRectWidth = this.ChartWidth / (xChartData.length + 1);
+        this.mChartRectWidth = this.mChartWidth / (xChartData.length + 1);
 
         // 畫投資金額
-        this.drawChartWithCircle(xChartData, ChartType.INV_CHART, this.InvColor, 1.5);
+        this.drawChartWithCircle(xChartData, ChartType.INV_CHART, this.mInvColor, 1.5);
         // 畫實際金額
-        this.drawChart(xChartData, ChartType.REAL_CHART, this.RealColor, 2);
+        this.drawChart(xChartData, ChartType.REAL_CHART, this.mRealColor, 2);
 
     }
 
+    // 畫底圖與座標軸
     private drawAxis() {
         let xAlign: string = "right";
         // 背景
-        this.fillRectEx(this.mBgContext, 0, 0, this.cWidth, this.cHeight, this.BgColor);
+        this.fillRectEx(this.mBgContext, 0, 0, this.cWidth, this.cHeight, this.mBgColor);
         // 主要圖形底色
-        this.fillRectEx(this.mBgContext, this.AxisWidth, this.BorderHeight, this.ChartWidth, this.ChartHeight, this.ChartBgColor);
-        // 邊框
-        //this.drawRectEx(this.mBgContext, this.AxisWidth, this.BorderHeight, this.ChartWidth, this.ChartHeight, "0000FF", 1);
-        // 畫坐標軸
-        for (let i = 0; i < this.AxisAmount; i++) {
-            let yPOS = (this.ChartHeight / (this.AxisAmount + 1)) * (this.AxisAmount - i) + this.BorderHeight;
-            this.dashedLineTo(this.mBgContext, this.AxisWidth, yPOS, this.ChartWidth + this.AxisWidth, yPOS, 3, this.AxisColor);
-            this.drawString(this.mBgContext, this.PrettyAxis[i + 1] + "", this.AxisWidth - 4, Math.round(yPOS + this.AxisHeight / 2), this.AxisFontSize, this.AxisFont, this.AxisColor, xAlign);
+        this.fillRectEx(this.mBgContext, this.mAxisWidth, this.mTopHeight, this.mChartWidth, this.mChartHeight, this.mChartBgColor);
+        // 邊框       
+        if(this.mShowChartBorder){
+            this.drawRectEx(this.mBgContext, this.mAxisWidth, this.mTopHeight, this.mChartWidth, this.mChartHeight, "111111", 1);
         }
-        let yPOS = this.ChartHeight + this.BorderHeight + this.AxisHeight / 2;
-        this.drawString(this.mBgContext, this.PrettyAxis[0] + "", this.AxisWidth - 4, Math.round(yPOS), this.AxisFontSize, this.AxisFont, this.AxisColor, xAlign);
-        yPOS = this.BorderHeight + this.AxisHeight / 2;
-        this.drawString(this.mBgContext, this.PrettyAxis[this.PrettyAxis.length - 1] + "", this.AxisWidth - 4, Math.round(yPOS), this.AxisFontSize, this.AxisFont, this.AxisColor, xAlign);
+
+        // 標題
+        let aText: TextObj = this.MeasureText(this.mTitleLabel, "normal", this.mTitleFont, this.mTitleFontSize);       
+        this.drawString(this.mBgContext, this.mTitleLabel, this.cWidth / 2 + aText.Width / 2, this.mTopHeight / 2 + aText.Height / 2, this.mTitleFontSize, this.mTitleFont, this.mAxisColor, xAlign);
+
+        // 畫坐標軸
+        for (let i = 0; i < this.mAxisAmount; i++) {
+            let yPOS = (this.mChartHeight / (this.mAxisAmount + 1)) * (this.mAxisAmount - i) + this.mTopHeight;
+            this.dashedLineTo(this.mBgContext, this.mAxisWidth, yPOS, this.mChartWidth + this.mAxisWidth, yPOS, 3, this.mAxisColor);
+            this.drawString(this.mBgContext, this.mPrettyAxis[i + 1] + "", this.mAxisWidth - 4, Math.round(yPOS + this.mAxisHeight / 2), this.mAxisFontSize, this.mAxisFont, this.mAxisColor, xAlign);
+        }
+        let yPOS = this.mChartHeight + this.mTopHeight + this.mAxisHeight / 2;
+        this.drawString(this.mBgContext, this.mPrettyAxis[0] + "", this.mAxisWidth - 4, Math.round(yPOS), this.mAxisFontSize, this.mAxisFont, this.mAxisColor, xAlign);
+        yPOS = this.mTopHeight + this.mAxisHeight / 2;
+        this.drawString(this.mBgContext, this.mPrettyAxis[this.mPrettyAxis.length - 1] + "", this.mAxisWidth - 4, Math.round(yPOS), this.mAxisFontSize, this.mAxisFont, this.mAxisColor, xAlign);
     }
 
+    // 畫線圖
     private drawChart(xChartData: any, aType: number, aColor: string, lineWidth?: number) {
         lineWidth = lineWidth || 1.5;
         this.mBgContext.save();
@@ -182,7 +219,7 @@ export class StockChart extends BaseChart {
         this.mBgContext.beginPath();
         for (let i = 0; i < xChartData.length; i++) {
             let aInfo = xChartData[i];
-            let xPos: number = this.ChartRectWidth * (i + 1) + this.AxisWidth;
+            let xPos: number = this.mChartRectWidth * (i + 1) + this.mAxisWidth;
             let yPos: number = this.getYPosByType(aInfo, aType);
             this.mBgContext.lineTo(xPos, yPos);
         }
@@ -192,6 +229,7 @@ export class StockChart extends BaseChart {
         this.mBgContext.restore();
     }
 
+    // 畫線圖+符號
     private drawChartWithCircle(xChartData: any, aType: number, aColor: string, lineWidth?: number) {
         lineWidth = lineWidth || 1.5;
         this.mBgContext.save();
@@ -200,7 +238,7 @@ export class StockChart extends BaseChart {
         this.mBgContext.beginPath();
         for (let i = 0; i < xChartData.length; i++) {
             let aInfo = xChartData[i];
-            let xPos: number = this.ChartRectWidth * (i + 1) + this.AxisWidth;
+            let xPos: number = this.mChartRectWidth * (i + 1) + this.mAxisWidth;
             let yPos: number = this.getYPosByType(aInfo, aType);
             this.mBgContext.lineTo(xPos, yPos);
         }
@@ -209,48 +247,51 @@ export class StockChart extends BaseChart {
         this.mBgContext.stroke();
         this.mBgContext.restore();
 
-        // 畫圓        
+        // 當資料量少時畫符號        
         if (xChartData.length < 50) {
             for (let i = 0; i < xChartData.length; i++) {
                 let aInfo = xChartData[i];
-                let xPos: number = this.ChartRectWidth * (i + 1) + this.AxisWidth;
+                let xPos: number = this.mChartRectWidth * (i + 1) + this.mAxisWidth;
                 let yPos: number = this.getYPosByType(aInfo, aType);
                 this.drawCircle(this.mBgContext, xPos, yPos, 3, aColor);
             }
         }
     }
 
+    // 依據不同型態計算Y軸位置
     private getYPosByType(aInfo: any, aType: ChartType) {
-        // 依據不同型態計算Y軸位置
         switch (aType) {
             case ChartType.INV_CHART:
-                return this.BorderHeight + this.ChartHeight * (this.MaxRealAmt - aInfo.SumAmt) / (this.MaxRealAmt - this.MinRealAmt);
+                return this.mTopHeight + this.mChartHeight * (this.mMaxRealAmt - aInfo.SumAmt) / (this.mMaxRealAmt - this.mMinRealAmt);
             case ChartType.REAL_CHART:
-                return this.BorderHeight + this.ChartHeight * (this.MaxRealAmt - aInfo.RealAmt) / (this.MaxRealAmt - this.MinRealAmt);
+                return this.mTopHeight + this.mChartHeight * (this.mMaxRealAmt - aInfo.RealAmt) / (this.mMaxRealAmt - this.mMinRealAmt);
             default:
                 return 0;
         }
     }
 
+    // 貼底圖後繪製前景
     public drawFrontContext = (mouseEvent?: MyMouseEvent): void => {
-        if (!mouseEvent || this.ChartRectWidth == 0 || !this.ChartData) {
+        if (!mouseEvent || this.mChartRectWidth == 0 || !this.mChartData) {
             return;
         }
         // 畫查價線
         // 計算x座標
-        let xPos = Math.max(mouseEvent.XPos, this.AxisWidth);
-        xPos = Math.min(mouseEvent.XPos, this.AxisWidth + this.ChartWidth);
-        xPos = Math.max(mouseEvent.XPos, this.AxisWidth);
+        let xPos = Math.max(mouseEvent.XPos, this.mAxisWidth);
+        xPos = Math.min(mouseEvent.XPos, this.mAxisWidth + this.mChartWidth);
+        xPos = Math.max(mouseEvent.XPos, this.mAxisWidth);
         let xIndex = -1;
-        if ((this.ChartRectWidth > 0 || xPos < this.AxisWidth || xPos > (this.AxisWidth + this.ChartRectWidth))) {
-            xIndex = Math.round((xPos - this.AxisWidth - this.ChartRectWidth) / this.ChartRectWidth);
+        if ((this.mChartRectWidth > 0 || xPos < this.mAxisWidth || xPos > (this.mAxisWidth + this.mChartRectWidth))) {
+            xIndex = Math.round((xPos - this.mAxisWidth - this.mChartRectWidth) / this.mChartRectWidth);
             //xIndex = Math.min(xIndex, this.ChartData.length-1);
             //xIndex = Math.max(xIndex, 0);
         }
         //console.log("xIndex=" + xIndex);
-        if (xIndex >= 0 && xIndex < this.ChartData.length) {
-            let LineX = Math.round(this.AxisWidth + (xIndex + 1) * this.ChartRectWidth);
-            this.clearLineTo(this.mContext, LineX, this.BorderHeight, LineX, this.BorderHeight + this.ChartHeight, "#000000");
+        if (xIndex >= 0 && xIndex < this.mChartData.length) {
+            let LineX = Math.round(this.mAxisWidth + (xIndex + 1) * this.mChartRectWidth);     
+            if(this.mShowQuoteLine){
+                this.clearLineTo(this.mContext, LineX, this.mTopHeight, LineX, this.mTopHeight + this.mChartHeight, this.mQuoteLineColor);
+            }
 
             // 畫提示資料
             let hintDisplay: boolean = true;
@@ -261,15 +302,14 @@ export class StockChart extends BaseChart {
                 "BorderColor": "#000000",
                 "BgColor": "#FFFFFF",
                 "Alpha": 0.7,
-
             }
             // 畫hint區塊
             if (hintDisplay) {
                 let hintStartX = LineX + mHint.BorderWidth;
-                if (hintStartX + mHint.Width > this.AxisWidth + this.ChartWidth - mHint.BorderWidth) {
+                if (hintStartX + mHint.Width > this.mAxisWidth + this.mChartWidth - mHint.BorderWidth) {
                     hintStartX = LineX - mHint.BorderWidth - mHint.Width;
                 }
-                let hintStartY = this.BorderHeight + this.ChartHeight / 2 + mHint.BorderWidth;
+                let hintStartY = this.mTopHeight + this.mChartHeight / 2 + mHint.BorderWidth;
                 //mContext.lineWidth = mHint.BorderLineWdith;
                 this.mContext.strokeStyle = mHint.BorderColor;
                 let aColor = this.hexToRgb(mHint.BgColor);
@@ -278,39 +318,38 @@ export class StockChart extends BaseChart {
 
                 let HintX = [Math.round(hintStartX + 6), Math.round(hintStartX + 20), Math.round(hintStartX + 52)];
                 // 日期
-                let yPos = Math.round(hintStartY + mHint.Height / 6 + this.AxisHeight / 2);
-                this.drawString(this.mContext, this.ChartData[xIndex].MktDate, HintX[1], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
-
-                // 市值
-                yPos = Math.round(hintStartY + 3 * mHint.Height / 6 + this.AxisHeight / 2);
-                this.drawCircle(this.mContext, HintX[0] + 4, Math.round(hintStartY + 3 * mHint.Height / 6), 5, this.InvColor);
-                this.drawString(this.mContext, "市值 ", HintX[1], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
-                this.drawString(this.mContext, this.addComma(this.ChartData[xIndex].SumAmt.toFixed(2)), HintX[2], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
+                let yPos = Math.round(hintStartY + mHint.Height / 6 + this.mAxisHeight / 2);
+                this.drawString(this.mContext, this.mChartData[xIndex].MktDate, HintX[1], yPos, this.mAxisFontSize, this.mAxisFont, "#000000", "left");
 
                 // 成本
-                yPos = Math.round(hintStartY + 5 * mHint.Height / 6 + this.AxisHeight / 2);
-                this.drawCircle(this.mContext, HintX[0] + 4, Math.round(hintStartY + 5 * mHint.Height / 6), 5, this.RealColor);
-                this.drawString(this.mContext, "成本 ", HintX[1], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
-                this.drawString(this.mContext, this.addComma(this.ChartData[xIndex].RealAmt.toFixed(2)), HintX[2], yPos, this.AxisFontSize, this.AxisFont, "#000000", "left");
+                yPos = Math.round(hintStartY + 5 * mHint.Height / 6 + this.mAxisHeight / 2);
+                this.drawCircle(this.mContext, HintX[0] + 4, Math.round(hintStartY + 5 * mHint.Height / 6), 5, this.mInvColor);
+                this.drawString(this.mContext, "成本 ", HintX[1], yPos, this.mAxisFontSize, this.mAxisFont, "#000000", "left");
+                this.drawString(this.mContext, this.addComma(this.mChartData[xIndex].SumAmt.toFixed(2)), HintX[2], yPos, this.mAxisFontSize, this.mAxisFont, "#000000", "left");
+
+                // 市值
+                yPos = Math.round(hintStartY + 3 * mHint.Height / 6 + this.mAxisHeight / 2);
+                this.drawCircle(this.mContext, HintX[0] + 4, Math.round(hintStartY + 3 * mHint.Height / 6), 5, this.mRealColor);
+                this.drawString(this.mContext, "市值 ", HintX[1], yPos, this.mAxisFontSize, this.mAxisFont, "#000000", "left");
+                this.drawString(this.mContext, this.addComma(this.mChartData[xIndex].RealAmt.toFixed(2)), HintX[2], yPos, this.mAxisFontSize, this.mAxisFont, "#000000", "left");
             }
 
         }
-
 
     }
 
     private calMaxMin(): void {
         // 水平座標軸與水平線
-        this.PrettyAxis = this.getPrettyAxis(this.MinRealAmt, this.MaxRealAmt, this.AxisAmount + 2);
+        this.mPrettyAxis = this.getPrettyAxis(this.mMinRealAmt, this.mMaxRealAmt, this.mAxisAmount + 2);
         //console.log(this.PrettyAxis);
 
-        this.MaxRealAmt = Math.max(this.MaxRealAmt, this.PrettyAxis[this.PrettyAxis.length - 1]);
-        this.MinRealAmt = Math.min(this.MinRealAmt, this.PrettyAxis[0]);
+        this.mMaxRealAmt = Math.max(this.mMaxRealAmt, this.mPrettyAxis[this.mPrettyAxis.length - 1]);
+        this.mMinRealAmt = Math.min(this.mMinRealAmt, this.mPrettyAxis[0]);
 
         // 依據最大值計算Axis寬度，再加上00
-        let aText: TextObj = this.MeasureText(this.PrettyAxis[this.PrettyAxis.length - 1] + "00", "normal", this.AxisFont, this.AxisFontSize);
-        this.AxisWidth = aText.Width;
-        this.ChartWidth = this.cWidth - this.AxisWidth - this.BorderWidth;
+        let aText: TextObj = this.MeasureText(this.mPrettyAxis[this.mPrettyAxis.length - 1] + "00", "normal", this.mAxisFont, this.mAxisFontSize);
+        this.mAxisWidth = aText.Width;
+        this.mChartWidth = this.cWidth - this.mAxisWidth - this.mBorderWidth;
     }
 
     // 主要繪圖方法
